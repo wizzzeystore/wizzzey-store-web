@@ -27,6 +27,12 @@ const nextConfig: NextConfig = {
         hostname: 'ecommerce-api-psp9.onrender.com',
         port: '',
         pathname: '/uploads/**',
+      },
+      {
+	protocol: 'https',
+        hostname: 'api.wizzzey.com',
+	port: '',
+	pathname: '/uploads/**'
       }
     ],
   },
