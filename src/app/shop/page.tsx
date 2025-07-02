@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import type { Product, PaginatedResponse, Category, AvailableFilters, AppliedFilters } from '@/lib/types';
-import { fetchProducts, fetchCategories } from '@/services/api'; 
+import { Product, PaginatedResponse, Category, AvailableFilters, AppliedFilters, Size, Color } from '@/lib/types';
+import { fetchProducts, fetchCategories, fetchBrands } from '@/services/api'; 
 import ProductCard from '@/components/ProductCard';
 import FilterPanel from '@/components/FilterPanel';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -29,6 +29,9 @@ type AppliedFiltersStateFromPanel = {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   productsIds?: string[]; // Added for products_ids
+  sizes?: Size[];
+  colors?: Color[];
+  brandIds?: string[];
 };
 
 // AppliedFiltersForApi is what's passed to the fetchProducts service
@@ -42,6 +45,7 @@ type AppliedFiltersForApi = {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   product_ids?: string[]; // Array of product IDs to fetch specific products
+  brandId?: string;
 };
 
 function ShopContent() {
@@ -65,7 +69,10 @@ function ShopContent() {
 
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
-  const parseFiltersFromUrl = useCallback((): AppliedFiltersStateFromPanel => {
+  const [brands, setBrands] = useState([]);
+  const [loadingBrands, setLoadingBrands] = useState(true);
+
+  const parseFiltersFromUrl = useCallback((): AppliedFiltersStateFromPanel & { sizes?: Size[], colors?: Color[], brandIds?: string[] } => {
     const sortBy = searchParams.get('sortBy') || undefined;
     const sortOrder = (searchParams.get('sortOrder') || undefined) as 'asc' | 'desc' | undefined;
     const categoryIdsFromUrl = searchParams.getAll('category'); // Can be multiple from URL
@@ -119,12 +126,44 @@ function ShopContent() {
     
     console.log('Final parsed productsIds:', productsIds);
     
+    // Add size, color, brandIds parsing
+    const sizesStr = searchParams.get('sizes');
+    const colorsStr = searchParams.get('colors');
+    const brandIdsStr = searchParams.get('brandIds');
+    let sizes: Size[] | undefined = undefined;
+    if (sizesStr) {
+      try {
+        sizes = JSON.parse(sizesStr);
+      } catch {
+        sizes = sizesStr.split(',').map(s => s.trim()).filter(Boolean) as Size[];
+      }
+    }
+    let colors: Color[] | undefined = undefined;
+    if (colorsStr) {
+      try {
+        colors = JSON.parse(colorsStr);
+      } catch {
+        colors = colorsStr.split(',').map(c => c.trim()).filter(Boolean) as Color[];
+      }
+    }
+    let brandIds: string[] | undefined = undefined;
+    if (brandIdsStr) {
+      try {
+        brandIds = JSON.parse(brandIdsStr);
+      } catch {
+        brandIds = brandIdsStr.split(',').map(b => b.trim()).filter(Boolean);
+      }
+    }
+    
     return {
       sortBy,
       sortOrder,
       categoryIds: categoryIdsFromUrl.length > 0 ? categoryIdsFromUrl : undefined,
       priceRange: priceRangeVal,
       productsIds,
+      sizes,
+      colors,
+      brandIds,
     };
   }, [searchParams]);
 
@@ -142,21 +181,34 @@ function ShopContent() {
       .finally(() => {
         setLoadingCategories(false);
       });
+    // Fetch brands
+    setLoadingBrands(true);
+    fetchBrands()
+      .then(data => setBrands(data))
+      .catch(error => {
+        console.error("Failed to fetch brands:", error);
+        toast({ title: "Error Loading Brands", description: error.message || "Could not fetch brands.", variant: "destructive"});
+        setBrands([]);
+      })
+      .finally(() => setLoadingBrands(false));
   }, [toast]);
 
 
-  const loadProducts = useCallback(async (filtersToApply: AppliedFiltersStateFromPanel, page: number = 1) => {
+  const loadProducts = useCallback(async (filtersToApply: AppliedFiltersStateFromPanel & { sizes?: Size[], colors?: Color[], brandIds?: string[] }, page: number = 1) => {
     setLoadingProducts(true);
     try {
       const serviceParams: AppliedFiltersForApi = {
         page: page,
         limit: 9, 
-        categoryId: filtersToApply.categoryIds?.[0], // Send first selected category, or undefined
+        categoryId: filtersToApply.categoryIds?.[0],
         minPrice: filtersToApply.priceRange?.[0],
         maxPrice: filtersToApply.priceRange?.[1],
         sortBy: filtersToApply.sortBy,
         sortOrder: filtersToApply.sortOrder,
-        product_ids: filtersToApply.productsIds, // Pass product IDs if available
+        product_ids: filtersToApply.productsIds,
+        size: filtersToApply.sizes,
+        color: filtersToApply.colors,
+        brandId: filtersToApply.brandIds?.[0],
       };
       
       console.log('Loading products with params:', serviceParams);
@@ -191,7 +243,7 @@ function ShopContent() {
   }, [searchParams, loadProducts, loadingCategories, parseFiltersFromUrl]);
 
 
-  const handleFilterChange = (newFiltersFromPanel: Partial<AppliedFiltersStateFromPanel>) => {
+  const handleFilterChange = (newFiltersFromPanel: Partial<AppliedFiltersStateFromPanel & { sizes?: Size[], colors?: Color[], brandIds?: string[] }>) => {
     const queryParams = new URLSearchParams();
 
     if (newFiltersFromPanel.priceRange) {
@@ -207,6 +259,16 @@ function ShopContent() {
     if (newFiltersFromPanel.sortBy) queryParams.set('sortBy', newFiltersFromPanel.sortBy);
     if (newFiltersFromPanel.sortOrder) queryParams.set('sortOrder', newFiltersFromPanel.sortOrder);
     
+    if (newFiltersFromPanel.sizes && newFiltersFromPanel.sizes.length > 0) {
+      queryParams.set('sizes', JSON.stringify(newFiltersFromPanel.sizes));
+    }
+    if (newFiltersFromPanel.colors && newFiltersFromPanel.colors.length > 0) {
+      queryParams.set('colors', JSON.stringify(newFiltersFromPanel.colors));
+    }
+    if (newFiltersFromPanel.brandIds && newFiltersFromPanel.brandIds.length > 0) {
+      queryParams.set('brandIds', JSON.stringify(newFiltersFromPanel.brandIds));
+    }
+    
     queryParams.set('page', '1'); 
 
     router.push(`${pathname}?${queryParams.toString()}`);
@@ -218,11 +280,14 @@ function ShopContent() {
     router.push(`${pathname}?${queryParams.toString()}`);
   };
   
-  const constructedAvailableFilters: AvailableFilters | null = loadingCategories 
+  const constructedAvailableFilters: AvailableFilters | null = (loadingCategories || loadingBrands)
     ? null 
     : {
         categories: categories,
-        priceRange: apiPriceRange || { min: 0, max: 5000 } // Use API provided range or default
+        priceRange: apiPriceRange || { min: 0, max: 5000 },
+        sizes: Object.values(Size),
+        colors: Object.values(Color),
+        brands: brands,
       };
 
   const isLoading = loadingProducts || loadingCategories;

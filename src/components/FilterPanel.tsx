@@ -1,8 +1,7 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
-import type { Category, AvailableFilters } from '@/lib/types';
+import type { Category, AvailableFilters, Size, Color, Brand } from '@/lib/types';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -21,12 +20,18 @@ interface FilterPanelProps {
     categoryIds?: string[];
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    sizes?: Size[];
+    colors?: Color[];
+    brandIds?: string[];
   }) => void;
-  initialFilters: { // From URL
+  initialFilters: {
     priceRange?: [number, number];
     categoryIds?: string[];
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    sizes?: Size[];
+    colors?: Color[];
+    brandIds?: string[];
   };
 }
 
@@ -45,6 +50,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialFilters.categoryIds || []);
   const [sortBy, setSortBy] = useState<string>(initialFilters.sortBy || 'name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(initialFilters.sortOrder || 'asc');
+  const [selectedSizes, setSelectedSizes] = useState<Size[]>(initialFilters.sizes || []);
+  const [selectedColors, setSelectedColors] = useState<Color[]>(initialFilters.colors || []);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>(initialFilters.brandIds || []);
 
   useEffect(() => {
     // These are the actual min/max bounds for the slider track, determined by API or defaults.
@@ -73,6 +81,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
     setSelectedCategories(initialFilters.categoryIds || []);
     setSortBy(initialFilters.sortBy || 'name');
     setSortOrder(initialFilters.sortOrder || 'asc');
+    setSelectedSizes(initialFilters.sizes || []);
+    setSelectedColors(initialFilters.colors || []);
+    setSelectedBrands(initialFilters.brandIds || []);
 
   }, [
     availableFilters?.priceRange?.min, 
@@ -80,7 +91,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
     initialFilters.priceRange, // Direct dependency on the priceRange from URL
     initialFilters.categoryIds, // For completeness, though not directly affecting priceRange state here
     initialFilters.sortBy,
-    initialFilters.sortOrder
+    initialFilters.sortOrder,
+    initialFilters.sizes,
+    initialFilters.colors,
+    initialFilters.brandIds,
   ]);
 
 
@@ -92,6 +106,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
     setSelectedCategories(prev =>
       prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
     );
+  };
+  
+  const handleSizeChange = (size: Size) => {
+    setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
+  };
+  
+  const handleColorChange = (color: Color) => {
+    setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
+  };
+  
+  const handleBrandChange = (brandId: string) => {
+    setSelectedBrands(prev => prev.includes(brandId) ? prev.filter(id => id !== brandId) : [...prev, brandId]);
   };
   
   const applyFilters = () => {
@@ -108,6 +134,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
       categoryIds: selectedCategories.length > 0 ? selectedCategories : undefined,
       sortBy,
       sortOrder,
+      sizes: selectedSizes.length > 0 ? selectedSizes : undefined,
+      colors: selectedColors.length > 0 ? selectedColors : undefined,
+      brandIds: selectedBrands.length > 0 ? selectedBrands : undefined,
     });
   };
 
@@ -118,6 +147,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
     setSelectedCategories([]);
     setSortBy('name');
     setSortOrder('asc');
+    setSelectedSizes([]);
+    setSelectedColors([]);
+    setSelectedBrands([]);
     onFilterChange({}); // This will trigger URL update to remove all filter params
   }
 
@@ -143,7 +175,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
         </Button>
       </div>
       
-      <Accordion type="multiple" defaultValue={['categories', 'price', 'sort']} className="w-full">
+      <Accordion type="multiple" defaultValue={['categories', 'price', 'size', 'color', 'brand', 'sort']} className="w-full">
         {availableFilters.categories.length > 0 && (
             <AccordionItem value="categories">
             <AccordionTrigger className="text-lg font-medium">Categories</AccordionTrigger>
@@ -182,6 +214,64 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
             </div>
           </AccordionContent>
         </AccordionItem>
+
+        {availableFilters.sizes && availableFilters.sizes.length > 0 && (
+          <AccordionItem value="size">
+            <AccordionTrigger className="text-lg font-medium">Size</AccordionTrigger>
+            <AccordionContent className="space-y-2 pt-2 flex flex-wrap gap-2">
+              {availableFilters.sizes.map(size => (
+                <Button
+                  key={size}
+                  variant={selectedSizes.includes(size) ? 'default' : 'outline'}
+                  size="sm"
+                  className="rounded-full px-4"
+                  onClick={() => handleSizeChange(size)}
+                >
+                  {size}
+                </Button>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+        {availableFilters.colors && availableFilters.colors.length > 0 && (
+          <AccordionItem value="color">
+            <AccordionTrigger className="text-lg font-medium">Color</AccordionTrigger>
+            <AccordionContent className="space-y-2 pt-2 flex flex-wrap gap-2">
+              {availableFilters.colors.map(color => (
+                <Button
+                  key={color}
+                  variant={selectedColors.includes(color) ? 'default' : 'outline'}
+                  size="sm"
+                  className="rounded-full px-4"
+                  onClick={() => handleColorChange(color)}
+                >
+                  {color}
+                </Button>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+        {availableFilters.brands && availableFilters.brands.length > 0 && (
+          <AccordionItem value="brand">
+            <AccordionTrigger className="text-lg font-medium">Brand</AccordionTrigger>
+            <AccordionContent className="space-y-2 pt-2">
+              {availableFilters.brands.map(brand => (
+                <div key={brand.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`brand-${brand.id}`}
+                    checked={selectedBrands.includes(brand.id)}
+                    onCheckedChange={() => handleBrandChange(brand.id)}
+                  />
+                  <Label htmlFor={`brand-${brand.id}`} className="text-sm font-normal cursor-pointer hover:text-primary">
+                    {brand.name}
+                  </Label>
+                </div>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
         <AccordionItem value="sort">
           <AccordionTrigger className="text-lg font-medium">Sort By</AccordionTrigger>

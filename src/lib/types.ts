@@ -96,10 +96,18 @@ export interface CartItem extends Product {
   selectedColor?: string;
 }
 
+export interface Brand {
+  id: string;
+  name: string;
+}
+
 // This represents the available filter options to be passed to FilterPanel
 export interface AvailableFilters {
   categories: Category[];
   priceRange: { min: number; max: number }; // This will be a sensible default or from product API meta
+  sizes?: Size[];
+  colors?: Color[];
+  brands?: Brand[];
 }
 
 // This represents the filters applied by the user, used for constructing API queries or client-side filtering
@@ -109,8 +117,50 @@ export interface AppliedFilters {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   page?: number;
+  size?: Size[];
+  color?: Color[];
+  brandId?: string;
   // Add other filterable attributes if needed for client-side or specific API calls
 }
+
+export enum Size {
+  XS = 'XS',
+  S = 'S',
+  M = 'M',
+  L = 'L',
+  XL = 'XL',
+  XXL = 'XXL',
+}
+export enum Color {
+  RED = 'Red',
+  BLUE = 'Blue',
+  GREEN = 'Green',
+  BLACK = 'Black',
+  WHITE = 'White',
+  YELLOW = 'Yellow',
+  ORANGE = 'Orange',
+  PURPLE = 'Purple',
+  GREY = 'Grey',
+  BROWN = 'Brown',
+
+  PINK = 'Pink',
+  NAVY = 'Navy',
+  BEIGE = 'Beige',
+  MAROON = 'Maroon',
+  TEAL = 'Teal',
+  OLIVE = 'Olive',
+  LAVENDER = 'Lavender',
+  CORAL = 'Coral',
+  TURQUOISE = 'Turquoise',
+  INDIGO = 'Indigo',
+  GOLD = 'Gold',
+  SILVER = 'Silver',
+  KHAKI = 'Khaki',
+  MINT = 'Mint',
+  CHARCOAL = 'Charcoal',
+  MUSTARD = 'Mustard'
+}
+
 
 
 export interface PaginatedResponse<T> {

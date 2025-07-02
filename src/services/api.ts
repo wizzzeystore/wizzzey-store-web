@@ -1,4 +1,4 @@
-import type { PaginatedResponse, Product, User, Order, OrderItem, ShippingAddress, CustomerInfo, Category, AvailableFilters } from '@/lib/types';
+import type { PaginatedResponse, Product, User, Order, OrderItem, ShippingAddress, CustomerInfo, Category, AvailableFilters, Brand } from '@/lib/types';
 import { getMockAvailableFilters } from '@/lib/mock-data'; // For temporary filter data
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -706,4 +706,13 @@ export async function fetchMyOrders(
   }
   // The API response is paginated, but for now, the component expects Order[] directly from this page.
   return response.data.orders.map(mapApiOrderToOrder);
+}
+
+export async function fetchBrands(searchTerm?: string): Promise<Brand[]> {
+  const endpoint = searchTerm ? `/api/brands?searchTerm=${encodeURIComponent(searchTerm)}` : '/api/brands';
+  const response = await fetchFromAPI<{ data: { brands: Brand[] } }>(endpoint, {}, true);
+  if (!response.data || !Array.isArray(response.data.brands)) {
+    throw new Error('Invalid brands response');
+  }
+  return response.data.brands;
 }
