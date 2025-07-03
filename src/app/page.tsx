@@ -6,12 +6,13 @@ import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { Product, Category, PaginatedResponse } from '@/lib/types';
 import { getMockCategories } from '@/lib/mock-data'; // Keep getMockCategories for now
-import { fetchProducts } from '@/services/api'; // Use the new API service
+import { fetchCategories, fetchProducts } from '@/services/api'; // Use the new API service
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { ChevronRight, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast'; // Import useToast
+import { date } from 'zod';
 
 // Component that handles the search params logic
 function HomePageContent() {
@@ -58,16 +59,19 @@ function HomePageContent() {
       });
 
     setLoadingCategories(true);
-    getMockCategories() // Categories still from mock as per current scope
-      .then(data => {
-        setFeaturedCategories(data.slice(0, 3)); // Show 3 featured categories
-      })
+    // getMockCategories() // Categories still from mock as per current scope
+    //   .then(data => {
+    //     setFeaturedCategories(data.slice(0, 3)); // Show 3 featured categories
+    //   })
+    fetchCategories().then(data => {
+      setFeaturedCategories(data.slice(0, 3));
+    })
       .catch(error => {
         console.error("Failed to fetch featured categories:", error);
         toast({ // Display toast on error
-            title: "Error Loading Categories",
-            description: error.message || "Could not fetch categories.",
-            variant: "destructive",
+          title: "Error Loading Categories",
+          description: error.message || "Could not fetch categories.",
+          variant: "destructive",
         });
         setFeaturedCategories([]);
       })
@@ -82,7 +86,7 @@ function HomePageContent() {
       <section className="relative bg-gradient-to-r from-primary/10 via-background to-accent/10 py-20 md:py-32 rounded-none overflow-hidden">
         <div className="container mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-primary-foreground mix-blend-overlay font-headline animate-fade-in-down">
-             Discover Your Style
+            Discover Your Style
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto animate-fade-in-up">
             Explore the latest trends and timeless classics. Quality clothing for every occasion.
@@ -93,8 +97,8 @@ function HomePageContent() {
             </Button>
           </Link>
         </div>
-         <div className="absolute inset-0 z-[-1] overflow-hidden">
-            <Image src="/hero.jpg" alt="Fashion background" layout="fill" objectFit="cover" className="opacity-80" data-ai-hint="fashion runway model"/>
+        <div className="absolute inset-0 z-[-1] overflow-hidden">
+          <Image src="/hero.jpg" alt="Fashion background" layout="fill" objectFit="cover" className="opacity-80" data-ai-hint="fashion runway model" />
         </div>
       </section>
 
@@ -110,7 +114,7 @@ function HomePageContent() {
         </div>
         {loadingProducts ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => <div key={i} className="bg-card p-4 shadow-md rounded-none h-[400px] flex items-center justify-center"><LoadingSpinner/></div>)}
+            {[...Array(4)].map((_, i) => <div key={i} className="bg-card p-4 shadow-md rounded-none h-[400px] flex items-center justify-center"><LoadingSpinner /></div>)}
           </div>
         ) : featuredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -125,12 +129,12 @@ function HomePageContent() {
 
       {/* Featured Categories Section */}
       <section>
-         <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold font-headline">Shop by Category</h2>
-         </div>
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold font-headline">Shop by Category</h2>
+        </div>
         {loadingCategories ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-             {[...Array(3)].map((_, i) => <div key={i} className="bg-card p-4 shadow-md rounded-none h-[200px] flex items-center justify-center"><LoadingSpinner/></div>)}
+            {[...Array(3)].map((_, i) => <div key={i} className="bg-card p-4 shadow-md rounded-none h-[200px] flex items-center justify-center"><LoadingSpinner /></div>)}
           </div>
         ) : featuredCategories.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -160,7 +164,7 @@ function HomePageContent() {
       {/* New Arrivals / Call to Action */}
       <section className="bg-accent text-accent-foreground py-16 rounded-none">
         <div className="container mx-auto text-center">
-          <Zap size={48} className="mx-auto mb-4 text-primary"/>
+          <Zap size={48} className="mx-auto mb-4 text-primary" />
           <h2 className="text-3xl font-bold mb-4 font-headline">Fresh Styles Just In!</h2>
           <p className="text-lg mb-8 max-w-xl mx-auto">
             Don't miss out on our newest arrivals. Update your wardrobe with the latest looks.
