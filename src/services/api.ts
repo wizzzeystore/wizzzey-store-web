@@ -1,5 +1,16 @@
-import type { PaginatedResponse, Product, User, Order, OrderItem, ShippingAddress, CustomerInfo, Category, AvailableFilters, Brand } from '@/lib/types';
-import { getMockAvailableFilters } from '@/lib/mock-data'; // For temporary filter data
+import type {
+  PaginatedResponse,
+  Product,
+  User,
+  Order,
+  OrderItem,
+  ShippingAddress,
+  CustomerInfo,
+  Category,
+  AvailableFilters,
+  Brand,
+} from "@/lib/types";
+import { getMockAvailableFilters } from "@/lib/mock-data"; // For temporary filter data
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -14,7 +25,13 @@ interface ApiProduct {
   costPrice?: number;
   discountPercentage?: number;
   imageUrl?: string;
-  media?: { url: string; type: string; alt?: string; _id: string; id: string }[];
+  media?: {
+    url: string;
+    type: string;
+    alt?: string;
+    _id: string;
+    id: string;
+  }[];
   brandId?: string;
   stock: number;
   categoryId: string;
@@ -52,12 +69,12 @@ interface RawProductListApiResponse {
     hasNextPage: boolean;
     hasPrevPage: boolean;
     filters?: {
-        applied: Record<string, any>;
-        available: {
-            minPrice?: number;
-            maxPrice?: number;
-            [key: string]: any;
-        }
+      applied: Record<string, any>;
+      available: {
+        minPrice?: number;
+        maxPrice?: number;
+        [key: string]: any;
+      };
     };
     sort?: any;
   };
@@ -86,13 +103,12 @@ interface RawSingleProductApiResponse {
   meta?: Record<string, any>; // Meta might be minimal or absent for single product
 }
 
-
 interface ApiUser {
   _id: string;
   id?: string; // API might send id or _id
   name: string;
   email: string;
-  role: 'Admin' | 'User';
+  role: "Admin" | "User";
   avatarUrl?: string;
   phone?: string;
   shippingAddress?: ShippingAddress;
@@ -111,20 +127,20 @@ interface ProfileResponseData {
 }
 
 interface ApiOrder {
-    _id: string;
-    id?: string;
-    customerId: string;
-    customerInfo?: CustomerInfo;
-    items: OrderItem[];
-    status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
-    totalAmount: number;
-    shippingAddress: ShippingAddress;
-    createdAt: string;
-    updatedAt?: string;
+  _id: string;
+  id?: string;
+  customerId: string;
+  customerInfo?: CustomerInfo;
+  items: OrderItem[];
+  status: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
+  totalAmount: number;
+  shippingAddress: ShippingAddress;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 interface CreateOrderResponseData {
-    order: ApiOrder;
+  order: ApiOrder;
 }
 
 // New interface for paginated orders response
@@ -145,7 +161,6 @@ interface RawPaginatedOrdersApiResponse {
     hasPrevPage: boolean;
   };
 }
-
 
 // Generic API response type
 interface ApiResponse<T> {
@@ -181,7 +196,6 @@ interface RawCategoryListApiResponse {
   };
 }
 
-
 /**
  * A generic function to fetch data from an API endpoint.
  * @param endpoint The API endpoint to fetch from (e.g., '/products').
@@ -190,9 +204,14 @@ interface RawCategoryListApiResponse {
  * @returns A promise that resolves with the fetched data.
  * @throws An error if the API request fails.
  */
-async function fetchFromAPI<T>(endpoint: string, options: RequestInit = {}, isProtected: boolean = false): Promise<T> {
+async function fetchFromAPI<T>(
+  endpoint: string,
+  options: RequestInit = {},
+  isProtected: boolean = false
+): Promise<T> {
   if (!API_BASE_URL) {
-    const errorMsg = "API_BASE_URL is not defined. Please set NEXT_PUBLIC_API_BASE_URL in your .env.local file (e.g., NEXT_PUBLIC_API_BASE_URL=http://localhost:3000) and restart the Next.js dev server.";
+    const errorMsg =
+      "API_BASE_URL is not defined. Please set NEXT_PUBLIC_API_BASE_URL in your .env.local file (e.g., NEXT_PUBLIC_API_BASE_URL=http://localhost:3000) and restart the Next.js dev server.";
     console.error(errorMsg);
     throw new Error(errorMsg);
   }
@@ -207,16 +226,24 @@ async function fetchFromAPI<T>(endpoint: string, options: RequestInit = {}, isPr
     requestOptions.headers = new Headers(requestOptions.headers as HeadersInit);
   }
 
-  if (!requestOptions.headers.has('Content-Type') && !(options?.body instanceof FormData) && options.method !== 'GET' && options.method !== 'HEAD') {
-    requestOptions.headers.append('Content-Type', 'application/json');
+  if (
+    !requestOptions.headers.has("Content-Type") &&
+    !(options?.body instanceof FormData) &&
+    options.method !== "GET" &&
+    options.method !== "HEAD"
+  ) {
+    requestOptions.headers.append("Content-Type", "application/json");
   }
 
   if (isProtected) {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
     if (token) {
-      requestOptions.headers.append('Authorization', `Bearer ${token}`);
+      requestOptions.headers.append("Authorization", `Bearer ${token}`);
     } else {
-      console.warn(`Attempted to call protected endpoint ${endpoint} without a token.`);
+      console.warn(
+        `Attempted to call protected endpoint ${endpoint} without a token.`
+      );
       // Consider throwing an error or redirecting to login if token is essential
       // For now, let it proceed, and the API will likely return a 401/403
     }
@@ -230,11 +257,12 @@ async function fetchFromAPI<T>(endpoint: string, options: RequestInit = {}, isPr
     if (contentType && contentType.includes("application/json")) {
       responseData = await response.json();
     } else if (response.ok && response.status === 204) {
-        return {} as T;
+      return {} as T;
     } else if (!response.ok && !contentType?.includes("application/json")) {
-         throw new Error(`API request to ${endpoint} failed with status ${response.status}: ${response.statusText}. Response was not JSON.`);
+      throw new Error(
+        `API request to ${endpoint} failed with status ${response.status}: ${response.statusText}. Response was not JSON.`
+      );
     }
-
 
     if (!response.ok) {
       let apiMessage: string | undefined = undefined;
@@ -242,28 +270,44 @@ async function fetchFromAPI<T>(endpoint: string, options: RequestInit = {}, isPr
 
       if (responseData) {
         // Check for top-level message or error
-        if (typeof responseData.message === 'string' && responseData.message.trim() !== '') {
+        if (
+          typeof responseData.message === "string" &&
+          responseData.message.trim() !== ""
+        ) {
           apiMessage = responseData.message.trim();
-        } else if (typeof responseData.error === 'string' && responseData.error.trim() !== '') {
+        } else if (
+          typeof responseData.error === "string" &&
+          responseData.error.trim() !== ""
+        ) {
           apiMessage = responseData.error.trim();
         }
 
         // Check for detailed validation errors
-        if (responseData.errors && Array.isArray(responseData.errors) && responseData.errors.length > 0) {
+        if (
+          responseData.errors &&
+          Array.isArray(responseData.errors) &&
+          responseData.errors.length > 0
+        ) {
           validationErrorsMessage = responseData.errors
-            .map((err: { field?: string; message: string; }) => {
+            .map((err: { field?: string; message: string }) => {
               // Ensure err.message is a string, provide fallback if not
-              const msgPart = typeof err.message === 'string' ? err.message : 'Invalid error structure';
+              const msgPart =
+                typeof err.message === "string"
+                  ? err.message
+                  : "Invalid error structure";
               return err.field ? `${err.field}: ${msgPart}` : msgPart;
             })
-            .join('; ');
+            .join("; ");
         }
       }
 
       let finalErrorMessage: string;
 
       // Determine if the primary apiMessage is just a numeric status code (e.g., "400", "500")
-      const isApiMessageJustStatusCode = apiMessage && /^\d{3}$/.test(apiMessage) && !isNaN(parseInt(apiMessage));
+      const isApiMessageJustStatusCode =
+        apiMessage &&
+        /^\d{3}$/.test(apiMessage) &&
+        !isNaN(parseInt(apiMessage));
 
       if (apiMessage && !isApiMessageJustStatusCode) {
         // Use the API's message if it's descriptive
@@ -302,43 +346,48 @@ async function fetchFromAPI<T>(endpoint: string, options: RequestInit = {}, isPr
     }
 
     return responseData as T;
-
   } catch (error: any) {
     console.error(`Error fetching from API endpoint ${endpoint}:`, error);
-    if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        const detailedMessage = `Failed to fetch from ${url}. This could be due to several reasons:
+    if (error instanceof TypeError && error.message === "Failed to fetch") {
+      const detailedMessage = `Failed to fetch from ${url}. This could be due to several reasons:
 1. The API server at ${API_BASE_URL} might not be running or accessible. Please ensure your backend is running.
 2. There might be a CORS (Cross-Origin Resource Sharing) issue. Ensure the server is configured to accept requests from this origin (your Next.js app's URL).
 3. A network connectivity problem. Check your internet connection.
 Original error: ${error.message}`;
-        console.error(detailedMessage);
-        throw new Error(detailedMessage);
+      console.error(detailedMessage);
+      throw new Error(detailedMessage);
     }
     // If error already has a status (meaning it was an API error we processed), re-throw it.
     // Otherwise, wrap it if it's an unexpected error during the fetch process.
     if (error.status) {
-       throw error;
+      throw error;
     }
-    throw new Error(`An unknown error occurred while fetching from ${url}. Original error: ${error.message || String(error)}`);
+    throw new Error(
+      `An unknown error occurred while fetching from ${url}. Original error: ${
+        error.message || String(error)
+      }`
+    );
   }
 }
 
 const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
   let images: string[] = [];
-  const baseUrl = API_BASE_URL || '';
+  const baseUrl = API_BASE_URL || "";
 
   if (apiProduct.media && apiProduct.media.length > 0) {
-    images = apiProduct.media.map(m =>
-      m.url.startsWith('http') || m.url.startsWith('data:') ? m.url : `${baseUrl}${m.url.startsWith('/') ? m.url : '/' + m.url}`
-    );
-  } else if (apiProduct.imageUrl) {
-    images = [
-      apiProduct.imageUrl.startsWith('http') || apiProduct.imageUrl.startsWith('data:') ? apiProduct.imageUrl : `${baseUrl}${apiProduct.imageUrl.startsWith('/') ? apiProduct.imageUrl : '/' + apiProduct.imageUrl}`
-    ];
+    images = apiProduct.media.map((m) => `${baseUrl}/${m.url}`);
+  }
+  
+  if (apiProduct.imageUrl) {
+    images = [`${baseUrl}/${apiProduct.imageUrl}`, ...images];
   }
 
   if (images.length === 0) {
-      images.push(`https://placehold.co/600x800.png?text=${encodeURIComponent(apiProduct.name)}`);
+    images.push(
+      `https://placehold.co/600x800.png?text=${encodeURIComponent(
+        apiProduct.name
+      )}`
+    );
   }
 
   return {
@@ -375,15 +424,21 @@ const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
 };
 
 const mapApiOrderToOrder = (apiOrder: ApiOrder): Order => {
-  const baseUrl = API_BASE_URL || '';
+  const baseUrl = API_BASE_URL || "";
   return {
     id: apiOrder.id || apiOrder._id,
     customerId: apiOrder.customerId,
     customerInfo: apiOrder.customerInfo,
-    items: apiOrder.items.map(item => {
-      let productImage = item.productImage || "https://placehold.co/100x100.png";
-      if (productImage && !(productImage.startsWith('http') || productImage.startsWith('data:'))) {
-          productImage = `${baseUrl}${productImage.startsWith('/') ? productImage : '/' + productImage}`;
+    items: apiOrder.items.map((item) => {
+      let productImage =
+        item.productImage || "https://placehold.co/100x100.png";
+      if (
+        productImage &&
+        !(productImage.startsWith("http") || productImage.startsWith("data:"))
+      ) {
+        productImage = `${baseUrl}${
+          productImage.startsWith("/") ? productImage : "/" + productImage
+        }`;
       }
       return {
         ...item,
@@ -407,40 +462,46 @@ export interface FetchProductsParams {
   minPrice?: number;
   maxPrice?: number;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
   name?: string;
   inStock?: boolean;
   product_ids?: string[]; // Array of product IDs to fetch specific products
 }
 
-export async function fetchProducts(params: FetchProductsParams = {}): Promise<PaginatedResponse<Product>> {
+export async function fetchProducts(
+  params: FetchProductsParams = {}
+): Promise<PaginatedResponse<Product>> {
   const { page = 1, limit = 9, product_ids, ...otherFilters } = params;
   const query = new URLSearchParams();
-  query.set('page', String(page));
-  query.set('limit', String(limit));
+  query.set("page", String(page));
+  query.set("limit", String(limit));
 
   // Handle product_ids parameter specially - it should be passed as product_ids to the API
   if (product_ids && product_ids.length > 0) {
-    query.set('product_ids', JSON.stringify(product_ids));
-    console.log('Setting product_ids in query:', JSON.stringify(product_ids));
+    query.set("product_ids", JSON.stringify(product_ids));
+    console.log("Setting product_ids in query:", JSON.stringify(product_ids));
   }
 
   Object.entries(otherFilters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && String(value).trim() !== '') {
-       query.set(key, String(value));
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      query.set(key, String(value));
     }
   });
 
   const endpoint = `/api/products?${query.toString()}`;
-  console.log('API endpoint being called:', endpoint);
-  
-  // Use union type to handle both response structures
-  const rawResponse = await fetchFromAPI<RawProductListApiResponse | RawProductIdsApiResponse>(endpoint);
+  console.log("API endpoint being called:", endpoint);
 
-  const transformedProducts: Product[] = rawResponse.data.products.map(mapApiProductToProduct);
+  // Use union type to handle both response structures
+  const rawResponse = await fetchFromAPI<
+    RawProductListApiResponse | RawProductIdsApiResponse
+  >(endpoint);
+
+  const transformedProducts: Product[] = rawResponse.data.products.map(
+    mapApiProductToProduct
+  );
 
   // Check if this is a product IDs response (has requestedIds field) or regular paginated response
-  const isProductIdsResponse = 'requestedIds' in rawResponse.data;
+  const isProductIdsResponse = "requestedIds" in rawResponse.data;
 
   if (isProductIdsResponse) {
     // Handle product IDs response (no meta field)
@@ -464,14 +525,15 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<P
         available: {
           minPrice: undefined,
           maxPrice: undefined,
-        }
+        },
       },
-      sort: { by: 'createdAt', order: 'desc' },
+      sort: { by: "createdAt", order: "desc" },
     };
   } else {
     // Handle regular paginated response
     const paginatedResponse = rawResponse as RawProductListApiResponse;
-    const availableFiltersData = paginatedResponse.meta.filters?.available || {};
+    const availableFiltersData =
+      paginatedResponse.meta.filters?.available || {};
 
     return {
       type: paginatedResponse.type,
@@ -492,9 +554,9 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<P
         available: {
           minPrice: availableFiltersData.minPrice,
           maxPrice: availableFiltersData.maxPrice,
-        }
+        },
       },
-      sort: paginatedResponse.meta.sort || { by: 'createdAt', order: 'desc' },
+      sort: paginatedResponse.meta.sort || { by: "createdAt", order: "desc" },
     };
   }
 }
@@ -502,14 +564,20 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<P
 export async function fetchProductById(id: string): Promise<Product | null> {
   const endpoint = `/api/products?id=${id}`; // API takes product ID as a query param
   try {
-    const rawResponse = await fetchFromAPI<RawSingleProductApiResponse | RawProductListApiResponse>(endpoint);
+    const rawResponse = await fetchFromAPI<
+      RawSingleProductApiResponse | RawProductListApiResponse
+    >(endpoint);
 
     let productData: ApiProduct | undefined;
 
     // Check response structure: single product or list with one product
-    if ('product' in rawResponse.data) {
-      productData = (rawResponse.data as {product: ApiProduct}).product;
-    } else if ('products' in rawResponse.data && Array.isArray(rawResponse.data.products) && rawResponse.data.products.length > 0) {
+    if ("product" in rawResponse.data) {
+      productData = (rawResponse.data as { product: ApiProduct }).product;
+    } else if (
+      "products" in rawResponse.data &&
+      Array.isArray(rawResponse.data.products) &&
+      rawResponse.data.products.length > 0
+    ) {
       productData = rawResponse.data.products[0];
     }
 
@@ -530,21 +598,37 @@ export async function fetchProductById(id: string): Promise<Product | null> {
   }
 }
 
-
 export async function fetchCategories(): Promise<Category[]> {
-  const response = await fetchFromAPI<RawCategoryListApiResponse>('/api/categories');
-  if (response.type === "ERROR" || !response.data || !response.data.categories) {
-    throw new Error(response.message || (response as any).error || 'Failed to fetch categories');
+  const response = await fetchFromAPI<RawCategoryListApiResponse>(
+    "/api/categories"
+  );
+  if (
+    response.type === "ERROR" ||
+    !response.data ||
+    !response.data.categories
+  ) {
+    throw new Error(
+      response.message ||
+        (response as any).error ||
+        "Failed to fetch categories"
+    );
   }
 
-  return response.data.categories.map(apiCategory => {
-    const baseUrl = API_BASE_URL || '';
+  return response.data.categories.map((apiCategory) => {
+    const baseUrl = API_BASE_URL || "";
     let imageUrl = apiCategory.imageUrl;
-    if (imageUrl && !(imageUrl.startsWith('http') || imageUrl.startsWith('data:'))) {
-      imageUrl = `${baseUrl}${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`;
+    if (
+      imageUrl &&
+      !(imageUrl.startsWith("http") || imageUrl.startsWith("data:"))
+    ) {
+      imageUrl = `${baseUrl}${
+        imageUrl.startsWith("/") ? imageUrl : "/" + imageUrl
+      }`;
     }
     if (!imageUrl) {
-        imageUrl = `https://placehold.co/300x200.png?text=${encodeURIComponent(apiCategory.name)}`;
+      imageUrl = `https://placehold.co/300x200.png?text=${encodeURIComponent(
+        apiCategory.name
+      )}`;
     }
     return {
       id: apiCategory.id || apiCategory._id,
@@ -580,7 +664,10 @@ export const fetchAvailableFilters = async (): Promise<AvailableFilters> => {
       maxPrice = productsResponse.filters.available.maxPrice;
     }
   } catch (error) {
-    console.warn("Could not fetch dynamic price range for filters, using default.", error);
+    console.warn(
+      "Could not fetch dynamic price range for filters, using default.",
+      error
+    );
   }
 
   return {
@@ -589,34 +676,65 @@ export const fetchAvailableFilters = async (): Promise<AvailableFilters> => {
   };
 };
 
-
 // Authentication API functions
-export async function loginUser(credentials: { email: string; pass: string }): Promise<AuthResponseData> {
-  const response = await fetchFromAPI<ApiResponse<AuthResponseData>>(`/api/auth/login`, {
-    method: 'POST',
-    body: JSON.stringify({email: credentials.email, password: credentials.pass}),
-  });
+export async function loginUser(credentials: {
+  email: string;
+  pass: string;
+}): Promise<AuthResponseData> {
+  const response = await fetchFromAPI<ApiResponse<AuthResponseData>>(
+    `/api/auth/login`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        email: credentials.email,
+        password: credentials.pass,
+      }),
+    }
+  );
   if (response.type === "ERROR" || !response.data) {
-    throw new Error(response.message || (response as any).error || 'Login failed');
+    throw new Error(
+      response.message || (response as any).error || "Login failed"
+    );
   }
   return response.data;
 }
 
-export async function registerUser(userData: { name: string; email: string; pass: string }): Promise<AuthResponseData> {
-   const response = await fetchFromAPI<ApiResponse<AuthResponseData>>(`/api/auth/register`, {
-    method: 'POST',
-    body: JSON.stringify({name: userData.name, email: userData.email, password: userData.pass}),
-  });
+export async function registerUser(userData: {
+  name: string;
+  email: string;
+  pass: string;
+}): Promise<AuthResponseData> {
+  const response = await fetchFromAPI<ApiResponse<AuthResponseData>>(
+    `/api/auth/register`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        name: userData.name,
+        email: userData.email,
+        password: userData.pass,
+      }),
+    }
+  );
   if (response.type === "ERROR" || !response.data) {
-    throw new Error(response.message || (response as any).error || 'Registration failed');
+    throw new Error(
+      response.message || (response as any).error || "Registration failed"
+    );
   }
   return response.data;
 }
 
 export async function fetchUserProfile(): Promise<User> {
-  const response = await fetchFromAPI<ApiResponse<ProfileResponseData>>(`/api/auth/profile`, {}, true);
+  const response = await fetchFromAPI<ApiResponse<ProfileResponseData>>(
+    `/api/auth/profile`,
+    {},
+    true
+  );
   if (response.type === "ERROR" || !response.data || !response.data.user) {
-    throw new Error(response.message || (response as any).error || 'Failed to fetch user profile');
+    throw new Error(
+      response.message ||
+        (response as any).error ||
+        "Failed to fetch user profile"
+    );
   }
   const apiUser = response.data.user;
   return {
@@ -639,14 +757,24 @@ export interface UpdateUserProfilePayload {
   billingAddress?: ShippingAddress;
 }
 
-export async function updateUserProfile(payload: UpdateUserProfilePayload): Promise<User> {
-  const response = await fetchFromAPI<ApiResponse<{ user: ApiUser }>>(`/api/auth/profile`, {
-    method: 'PUT',
-    body: JSON.stringify(payload),
-  }, true);
+export async function updateUserProfile(
+  payload: UpdateUserProfilePayload
+): Promise<User> {
+  const response = await fetchFromAPI<ApiResponse<{ user: ApiUser }>>(
+    `/api/auth/profile`,
+    {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    },
+    true
+  );
 
   if (response.type === "ERROR" || !response.data || !response.data.user) {
-    throw new Error(response.message || (response as any).error || 'Failed to update user profile');
+    throw new Error(
+      response.message ||
+        (response as any).error ||
+        "Failed to update user profile"
+    );
   }
   const apiUser = response.data.user;
   return {
@@ -672,14 +800,22 @@ interface CreateOrderPayload {
   paymentMethod: string;
 }
 
-export async function createOrderApi(orderData: CreateOrderPayload): Promise<Order> {
-  const response = await fetchFromAPI<ApiResponse<CreateOrderResponseData>>(`/api/orders`, {
-    method: 'POST',
-    body: JSON.stringify(orderData),
-  }, true);
+export async function createOrderApi(
+  orderData: CreateOrderPayload
+): Promise<Order> {
+  const response = await fetchFromAPI<ApiResponse<CreateOrderResponseData>>(
+    `/api/orders`,
+    {
+      method: "POST",
+      body: JSON.stringify(orderData),
+    },
+    true
+  );
 
   if (response.type === "ERROR" || !response.data || !response.data.order) {
-    throw new Error(response.message || (response as any).error || 'Failed to create order');
+    throw new Error(
+      response.message || (response as any).error || "Failed to create order"
+    );
   }
   const apiOrder = response.data.order;
   return mapApiOrderToOrder(apiOrder);
@@ -688,9 +824,10 @@ export async function createOrderApi(orderData: CreateOrderPayload): Promise<Ord
 export async function fetchMyOrders(
   page: number = 1,
   limit: number = 10,
-  sortBy: string = 'createdAt',
-  sortOrder: 'asc' | 'desc' = 'desc'
-): Promise<Order[]> { // For now, returning Order[] as component expects, not full PaginatedResponse<Order>
+  sortBy: string = "createdAt",
+  sortOrder: "asc" | "desc" = "desc"
+): Promise<Order[]> {
+  // For now, returning Order[] as component expects, not full PaginatedResponse<Order>
   const queryParams = new URLSearchParams({
     page: String(page),
     limit: String(limit),
@@ -699,20 +836,32 @@ export async function fetchMyOrders(
   });
   const endpoint = `/api/orders/my-orders?${queryParams.toString()}`;
 
-  const response = await fetchFromAPI<RawPaginatedOrdersApiResponse>(endpoint, {}, true);
+  const response = await fetchFromAPI<RawPaginatedOrdersApiResponse>(
+    endpoint,
+    {},
+    true
+  );
 
   if (response.type === "ERROR" || !response.data || !response.data.orders) {
-    throw new Error(response.message || (response as any).error || 'Failed to fetch orders');
+    throw new Error(
+      response.message || (response as any).error || "Failed to fetch orders"
+    );
   }
   // The API response is paginated, but for now, the component expects Order[] directly from this page.
   return response.data.orders.map(mapApiOrderToOrder);
 }
 
 export async function fetchBrands(searchTerm?: string): Promise<Brand[]> {
-  const endpoint = searchTerm ? `/api/brands?searchTerm=${encodeURIComponent(searchTerm)}` : '/api/brands';
-  const response = await fetchFromAPI<{ data: { brands: Brand[] } }>(endpoint, {}, true);
+  const endpoint = searchTerm
+    ? `/api/brands?searchTerm=${encodeURIComponent(searchTerm)}`
+    : "/api/brands";
+  const response = await fetchFromAPI<{ data: { brands: Brand[] } }>(
+    endpoint,
+    {},
+    true
+  );
   if (!response.data || !Array.isArray(response.data.brands)) {
-    throw new Error('Invalid brands response');
+    throw new Error("Invalid brands response");
   }
   return response.data.brands;
 }

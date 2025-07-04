@@ -117,7 +117,7 @@ function HomePageContent() {
             {[...Array(4)].map((_, i) => <div key={i} className="bg-card p-4 shadow-md rounded-none h-[400px] flex items-center justify-center"><LoadingSpinner /></div>)}
           </div>
         ) : featuredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {featuredProducts.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}

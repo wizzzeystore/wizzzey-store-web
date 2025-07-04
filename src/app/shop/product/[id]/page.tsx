@@ -93,10 +93,12 @@ export default function ProductDetailPage() {
   if (!product) {
     return <div className="text-center py-10 text-xl">Product not found. It might have been removed or the link is incorrect.</div>;
   }
+
+  console.log('Log: images', product.images);
   
-  const mainImage = (product.images && product.images[0]) || "https://placehold.co/600x800.png";
-  const allImages = [mainImage, ...(product.media || []).map((m: any) => m.url).filter(Boolean)];
-  const thumbnailImages = allImages.length > 1 ? allImages.slice(1, 4) : [];
+  const mainImage = (product.images[0]) || "https://placehold.co/600x800.png";
+  const thumbnailImages = product.images.length > 1 ? product.images.slice(1, 4) : [];
+  console.log('Log: thumbnailImages', thumbnailImages);
   const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
   const discount = hasDiscount
     ? product.discountPercentage || Math.round(100 - (product.price / product.compareAtPrice) * 100)
@@ -138,7 +140,7 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Product Details */}
-        <div className="flex flex-col justify-center">
+        <div className="flex flex-col">
           <h1 className="text-3xl lg:text-4xl font-bold mb-3 font-headline">{product.name}</h1>
           {product.categoryName && <p className="text-md text-muted-foreground mb-3">Category: {product.categoryName}</p>}
           <div className="flex items-center mb-4">
@@ -159,7 +161,14 @@ export default function ProductDetailPage() {
               <span className="text-3xl font-semibold text-primary">₹{product.price.toFixed(2)}</span>
             )}
           </div>
-          <p className="text-foreground leading-relaxed mb-6">{product.description}</p>
+          <p
+            className="text-foreground leading-relaxed mb-6"
+            dangerouslySetInnerHTML={{
+              __html: product.description
+                ? product.description.replace(/(\r\n|\n|\r)/g, '<br />')
+                : ''
+            }}
+          />
 
           {product.availableSizes && product.availableSizes.length > 0 && (
             <div className="mb-6">
@@ -238,7 +247,7 @@ export default function ProductDetailPage() {
       {relatedProducts.length > 0 && (
         <div className="mt-16">
           <h2 className="text-2xl font-bold mb-6 text-center font-headline">You Might Also Like</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {relatedProducts.map(p => (
               <ProductCard key={p.id} product={p} />
             ))}

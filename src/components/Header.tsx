@@ -14,8 +14,8 @@ const Header = () => {
   const { user, logout } = useAuth();
 
   return (
-    <header className="bg-card shadow-md sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+    <header className="bg-card">
+      <div className="container mx-auto px-4 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-primary font-headline">
           <Image src="/wizzzey_logo.png" alt="Wizzzey Store" width={100} height={100} />
         </Link>
@@ -53,7 +53,6 @@ const Header = () => {
           ) : (
             <Link href="/login" className="flex items-center text-foreground hover:text-primary transition-colors">
               <LogIn size={24} />
-              <span className="ml-1 hidden md:inline">Login</span>
             </Link>
           )}
         </nav>

@@ -47,7 +47,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   console.log('Log: product', product);
 
   return (
-    <div className="bg-card text-card-foreground shadow-lg hover:shadow-xl transition-shadow duration-300 group overflow-hidden relative">
+    <div className="bg-card text-card-foreground transition-shadow duration-300 group overflow-hidden relative">
       {product.isFeatured && (
         <span className="absolute top-2 left-2 bg-yellow-400 text-xs font-bold px-2 py-1 rounded z-10">Featured</span>
       )}
@@ -68,12 +68,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         </div>
       </Link>
-      <div className="p-4">
+      <div className="p-4 bg-transparent">
         <div className="flex items-center justify-between mb-1">
           <Link href={`/shop/product/${product.id}`}>
             <h3 className="text-lg font-semibold truncate font-headline hover:text-primary transition-colors" title={product.name}>{product.name}</h3>
           </Link>
-          {product.sku && <span className="text-xs text-muted-foreground ml-2">SKU: {product.sku}</span>}
         </div>
         {product.categoryName && <p className="text-sm text-muted-foreground mb-1">{product.categoryName}</p>}
         <div className="flex items-center gap-2 mb-2">
@@ -88,9 +87,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <span className="text-xl font-bold text-primary">₹{product.price.toFixed(2)}</span>
           )}
         </div>
-        {typeof product.costPrice === 'number' && (
-          <div className="text-xs text-muted-foreground mb-1">Cost: ₹{product.costPrice.toFixed(2)}</div>
-        )}
         <div className="flex items-center gap-1 mb-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <span key={i} className={i < ratings.average ? 'text-yellow-400' : 'text-gray-300'}>★</span>
@@ -125,10 +121,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </Button>
           {isLowStock && <span className="text-xs text-orange-600 ml-2">Low stock</span>}
         </div>
-        {product.stock === 0 || product.status === 'out_of_stock' ? (
+        {product.stock === 0 || product.status === 'out_of_stock' && (
           <p className="text-xs text-destructive mt-1">Currently unavailable</p>
-        ) : (
-          <p className="text-xs text-muted-foreground mt-1">In stock: {product.stock}</p>
         )}
       </div>
     </div>
