@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import type { Product } from '@/lib/types';
-import { fetchProductById } from '@/services/api'; // Updated import
+import { fetchProductById, fetchProducts } from '@/services/api'; // Updated import
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -44,7 +44,7 @@ export default function ProductDetailPage() {
               setSelectedColor(data.colors[0].name);
             }
             // Fetch related products (e.g., from the same category) - still mock
-            getMockProducts(1, 4, { categoryId: data.categoryId }).then(relatedData => {
+            fetchProducts({ page: 1, limit: 4, categoryId: data.categoryId }).then(relatedData => {
               setRelatedProducts(relatedData.data.items.filter(p => p.id !== data.id));
             });
           } else {
@@ -110,7 +110,6 @@ export default function ProductDetailPage() {
     <div className="container mx-auto py-8">
       <div className="flex flex-wrap items-center gap-2 mb-2">
         {product.isFeatured && <span className="bg-yellow-400 text-xs font-bold px-2 py-1 rounded">Featured</span>}
-        {isLowStock && <span className="text-xs text-orange-600">Low stock</span>}
       </div>
       <Button variant="outline" onClick={() => router.back()} className="mb-6">
         <ArrowLeft size={16} className="mr-2" /> Back to Shop
