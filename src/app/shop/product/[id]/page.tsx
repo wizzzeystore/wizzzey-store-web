@@ -27,6 +27,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const { addToCart } = useCart();
 
@@ -96,15 +97,16 @@ export default function ProductDetailPage() {
 
   console.log('Log: images', product.images);
   
-  const mainImage = (product.images[0]) || "https://placehold.co/600x800.png";
-  const thumbnailImages = product.images.length > 1 ? product.images.slice(1, 4) : [];
+  const allImages = product.images && product.images.length > 0 ? product.images : ["https://placehold.co/600x800.png"];
+  const mainImage = allImages[selectedImageIndex] || allImages[0];
+  const thumbnailImages = allImages.length > 1 ? allImages : [];
   console.log('Log: thumbnailImages', thumbnailImages);
   const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
   const discount = hasDiscount
-    ? product.discountPercentage || Math.round(100 - (product.price / product.compareAtPrice) * 100)
+    ? product.discountPercentage || Math.round(100 - (product.price / (product.compareAtPrice || product.price)) * 100)
     : 0;
   const ratings = product.ratings || { average: 0, count: 0 };
-  const isLowStock = typeof product.lowStockThreshold === 'number' && product.stock > 0 && product.stock <= product.lowStockThreshold;
+  const isLowStock = typeof product.lowStockThreshold === 'number' && (product.stock || 0) > 0 && (product.stock || 0) <= product.lowStockThreshold;
 
   return (
     <div className="container mx-auto py-8">
@@ -127,11 +129,24 @@ export default function ProductDetailPage() {
                     data-ai-hint="fashion clothing model"
                  />
             </div>
-            {thumbnailImages.length > 0 && (
+            {thumbnailImages.length > 1 && (
                 <div className="grid grid-cols-3 gap-2">
                     {thumbnailImages.map((img, index) => (
-                        <div key={index} className="relative aspect-square shadow-md overflow-hidden rounded-none">
-                             <Image src={img} alt={`${product.name} thumbnail ${index + 1}`} layout="fill" objectFit="cover" data-ai-hint="clothing detail"/>
+                        <div 
+                            key={index} 
+                            className={`relative aspect-square shadow-md overflow-hidden rounded-none cursor-pointer transition-all duration-200 ${
+                                selectedImageIndex === index ? 'ring-2 ring-primary' : 'hover:ring-2 hover:ring-primary/50'
+                            }`}
+                            onClick={() => setSelectedImageIndex(index)}
+                            onMouseEnter={() => setSelectedImageIndex(index)}
+                        >
+                             <Image 
+                                src={img} 
+                                alt={`${product.name} thumbnail ${index + 1}`} 
+                                layout="fill" 
+                                objectFit="cover" 
+                                data-ai-hint="clothing detail"
+                             />
                         </div>
                     ))}
                 </div>
@@ -209,7 +224,7 @@ export default function ProductDetailPage() {
               className="w-20 text-center"
             />
           </div>
-          {product.stock === 0 || product.status === 'out_of_stock' ? (
+          {(product.stock || 0) === 0 || product.status === 'out_of_stock' ? (
             <Button size="lg" disabled className="w-full md:w-auto">
               Out of Stock
             </Button>
@@ -218,7 +233,7 @@ export default function ProductDetailPage() {
               <ShoppingCart size={20} className="mr-2" /> Add to Cart
             </Button>
           )}
-          {product.stock > 0 && (
+          {(product.stock || 0) > 0 && (
              <div className="flex items-center text-green-600 mt-4">
                 <CheckCircle size={18} className="mr-2"/>
                 <span>In Stock - Ships in 2-3 business days</span>

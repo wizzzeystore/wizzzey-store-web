@@ -176,7 +176,10 @@ interface ApiCategory {
   id?: string;
   name: string;
   description?: string;
-  imageUrl?: string;
+  image?: {
+    url: string;
+    originalName: string;
+  };
   // other fields if present
 }
 
@@ -616,7 +619,7 @@ export async function fetchCategories(): Promise<Category[]> {
 
   return response.data.categories.map((apiCategory) => {
     const baseUrl = API_BASE_URL || "";
-    let imageUrl = apiCategory.imageUrl;
+    let imageUrl = apiCategory.image?.url;
     if (
       imageUrl &&
       !(imageUrl.startsWith("http") || imageUrl.startsWith("data:"))
@@ -634,7 +637,10 @@ export async function fetchCategories(): Promise<Category[]> {
       id: apiCategory.id || apiCategory._id,
       name: apiCategory.name,
       description: apiCategory.description,
-      imageUrl: imageUrl,
+      image: {
+        url: imageUrl,
+        originalName: apiCategory.image?.originalName || "",
+      },
     };
   });
 }

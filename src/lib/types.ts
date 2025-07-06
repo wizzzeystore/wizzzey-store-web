@@ -48,7 +48,10 @@ export interface Category {
   name: string;
   description?: string;
   parentId?: string | null;
-  imageUrl?: string;
+  image?: {
+    url: string;
+    originalName: string;
+  };
   createdAt?: string;
   updatedAt?: string;
 }

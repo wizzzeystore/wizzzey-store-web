@@ -8,6 +8,7 @@ import { ShoppingCart, Eye } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -17,6 +18,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
   const { toast } = useToast();
   const router = useRouter();
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -28,15 +30,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     });
   };
 
-  const imageUrl = product.images?.[0] || "https://placehold.co/600x800.png";
+  const allImages = product.images && product.images.length > 0 ? product.images : ["https://placehold.co/600x800.png"];
+  const imageUrl = isHovered && allImages.length > 1 ? allImages[1] : allImages[0];
   const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
   const discount = hasDiscount
     ? product.discountPercentage ||
-      Math.round(100 - (product.price / product.compareAtPrice) * 100)
+      Math.round(100 - (product.price / (product.compareAtPrice || product.price)) * 100)
     : 0;
   const isLowStock = typeof product.lowStockThreshold === "number" &&
-    product.stock > 0 &&
-    product.stock <= product.lowStockThreshold;
+    (product.stock || 0) > 0 &&
+    (product.stock || 0) <= product.lowStockThreshold;
   const ratings = product.ratings || { average: 0, count: 0 };
 
   return (
@@ -48,7 +51,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       )}
       
       <Link href={`/shop/product/${product.id}`} aria-label={`View ${product.name}`}>
-        <div className="relative w-full aspect-[3/4] overflow-hidden">
+        <div 
+          className="relative w-full aspect-[3/4] overflow-hidden"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
           <Image
             src={imageUrl}
             alt={product.name}
@@ -116,7 +123,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </span>
         </div>
 
-        {product.availableSizes?.length > 0 && (
+        {product.availableSizes && product.availableSizes.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-1">
             {product.availableSizes.slice(0, 3).map((size) => (
               <span
@@ -126,7 +133,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 {size}
               </span>
             ))}
-            {product.availableSizes.length > 3 && (
+            {product.availableSizes && product.availableSizes.length > 3 && (
               <span className="text-[10px] text-muted-foreground">
                 +{product.availableSizes.length - 3} more
               </span>
@@ -134,7 +141,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         )}
 
-        {product.colors?.length > 0 && (
+        {product.colors && product.colors.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-1">
             {product.colors.slice(0, 4).map((color) => (
               <span
@@ -144,7 +151,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 title={color.name}
               />
             ))}
-            {product.colors.length > 4 && (
+            {product.colors && product.colors.length > 4 && (
               <span className="text-[10px] text-muted-foreground">
                 +{product.colors.length - 4} more
               </span>
@@ -157,9 +164,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           size="sm"
           onClick={handleAddToCart}
           className="w-full mt-2 text-xs h-8"
-          disabled={product.stock === 0 || product.status === "out_of_stock"}
+          disabled={(product.stock || 0) === 0 || product.status === "out_of_stock"}
         >
-          {product.stock === 0 || product.status === "out_of_stock" ? (
+          {(product.stock || 0) === 0 || product.status === "out_of_stock" ? (
             "Out of Stock"
           ) : (
             <>
