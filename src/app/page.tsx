@@ -110,7 +110,7 @@ function HomePageContent() {
             <div className="w-full h-full bg-gray-200 animate-pulse"></div>
           ) : appSettings?.heroImage?.url ? (
             <Image 
-              src={appSettings.heroImage.url} 
+              src={`${process.env.NEXT_PUBLIC_API_URL}${appSettings.heroImage.url}`} 
               alt={appSettings.heroImage.originalName || "Hero background"} 
               layout="fill" 
               objectFit="cover" 
