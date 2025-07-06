@@ -871,3 +871,55 @@ export async function fetchBrands(searchTerm?: string): Promise<Brand[]> {
   }
   return response.data.brands;
 }
+
+// App Settings interfaces
+export interface AppSettings {
+  storeName: string;
+  defaultStoreEmail: string;
+  maintenanceMode: boolean;
+  darkMode: boolean;
+  themeAccentColor: string;
+  storeLogoUrl: string;
+  notifications: {
+    newOrderEmails: boolean;
+    lowStockAlerts: boolean;
+    productUpdatesNewsletter: boolean;
+  };
+  heroImage?: {
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+    url: string;
+  };
+  storeLogo?: {
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+    url: string;
+  };
+}
+
+interface AppSettingsApiResponse {
+  type: "OK" | "ERROR";
+  message: string;
+  data: {
+    settings: AppSettings;
+  };
+}
+
+export async function fetchAppSettings(): Promise<AppSettings> {
+  try {
+    const response = await fetchFromAPI<AppSettingsApiResponse>('/api/app-settings');
+    
+    if (response.type === "OK" && response.data?.settings) {
+      return response.data.settings;
+    } else {
+      throw new Error(response.message || "Failed to fetch app settings");
+    }
+  } catch (error) {
+    console.error("Error fetching app settings:", error);
+    throw error;
+  }
+}

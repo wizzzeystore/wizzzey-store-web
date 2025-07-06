@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import type { Product, Category, PaginatedResponse } from '@/lib/types';
 import { getMockCategories } from '@/lib/mock-data'; // Keep getMockCategories for now
 import { fetchCategories, fetchProducts } from '@/services/api'; // Use the new API service
+import { useAppSettings } from '@/context/AppSettingsContext';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -23,6 +24,7 @@ function HomePageContent() {
   const { toast } = useToast(); // Initialize toast
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { appSettings, loading: loadingSettings } = useAppSettings();
 
   // Check for products_ids parameter and redirect to shop page
   useEffect(() => {
@@ -86,7 +88,13 @@ function HomePageContent() {
       <section className="relative bg-gradient-to-r from-primary/10 via-background to-accent/10 py-20 md:py-32 rounded-none overflow-hidden">
         <div className="container mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-primary-foreground mix-blend-overlay font-headline animate-fade-in-down">
-            Discover Your Style
+            {loadingSettings ? (
+              <div className="h-16 bg-gray-300 rounded animate-pulse"></div>
+            ) : appSettings?.storeName ? (
+              appSettings.storeName
+            ) : (
+              "Discover Your Style"
+            )}
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto animate-fade-in-up">
             Explore the latest trends and timeless classics. Quality clothing for every occasion.
@@ -98,7 +106,20 @@ function HomePageContent() {
           </Link>
         </div>
         <div className="absolute inset-0 z-[-1] overflow-hidden">
-          <Image src="/hero.jpg" alt="Fashion background" layout="fill" objectFit="cover" className="opacity-80" data-ai-hint="fashion runway model" />
+          {loadingSettings ? (
+            <div className="w-full h-full bg-gray-200 animate-pulse"></div>
+          ) : appSettings?.heroImage?.url ? (
+            <Image 
+              src={appSettings.heroImage.url} 
+              alt={appSettings.heroImage.originalName || "Hero background"} 
+              layout="fill" 
+              objectFit="cover" 
+              className="opacity-80" 
+              data-ai-hint="fashion runway model" 
+            />
+          ) : (
+            <Image src="/hero.jpg" alt="Fashion background" layout="fill" objectFit="cover" className="opacity-80" data-ai-hint="fashion runway model" />
+          )}
         </div>
       </section>
 

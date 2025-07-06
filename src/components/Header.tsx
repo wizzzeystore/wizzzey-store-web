@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ShoppingCart, User as UserIcon, LogIn, LogOut, Shirt } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { useAppSettings } from '@/context/AppSettingsContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -12,12 +13,25 @@ import Image from 'next/image';
 const Header = () => {
   const { itemCount, hasMounted } = useCart();
   const { user, logout } = useAuth();
+  const { appSettings, loading } = useAppSettings();
 
   return (
     <header className="bg-card">
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-primary font-headline">
-          <Image src="/wizzzey_logo.png" alt="Wizzzey Store" width={100} height={100} />
+          {loading ? (
+            <div className="w-[100px] h-[100px] bg-gray-200 animate-pulse rounded"></div>
+          ) : appSettings?.storeLogo?.url ? (
+            <Image 
+              src={appSettings.storeLogo.url} 
+              alt={appSettings.storeName || "Store Logo"} 
+              width={100} 
+              height={100}
+              className="object-contain"
+            />
+          ) : (
+            <Image src="/wizzzey_logo.png" alt="Wizzzey Store" width={100} height={100} />
+          )}
         </Link>
         <nav className="flex items-center space-x-4 md:space-x-6">
           <Link href="/" className="text-foreground hover:text-primary transition-colors">
