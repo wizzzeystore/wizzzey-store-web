@@ -1,4 +1,4 @@
-import type {NextConfig} from 'next';
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -11,29 +11,29 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "placehold.co",
+        port: "",
+        pathname: "/**",
       },
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3000',
-        pathname: '/uploads/**',
+        protocol: "http",
+        hostname: "localhost",
+        port: "3000",
+        pathname: "/uploads/**",
       },
       {
-        protocol: 'https',
-        hostname: 'ecommerce-api-psp9.onrender.com',
-        port: '',
-        pathname: '/uploads/**',
+        protocol: "https",
+        hostname: "ecommerce-api-psp9.onrender.com",
+        port: "",
+        pathname: "/uploads/**",
       },
       {
-	protocol: 'https',
-        hostname: 'api.wizzzey.com',
-	port: '',
-	pathname: '/uploads/**'
-      }
+        protocol: "https",
+        hostname: "api.wizzzey.com",
+        port: "",
+        pathname: "/uploads/**",
+      },
     ],
   },
 };

@@ -361,7 +361,7 @@ function ShopContent() {
           </div>
         ) : productsResponse && productsResponse.data.items.length > 0 ? (
           <>
-            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-5' : 'grid-cols-1'}`}>
               {productsResponse.data.items.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}

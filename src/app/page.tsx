@@ -85,26 +85,7 @@ function HomePageContent() {
   return (
     <div className="space-y-16">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-primary/10 via-background to-accent/10 py-20 md:py-32 rounded-none overflow-hidden">
-        <div className="container mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-primary-foreground mix-blend-overlay font-headline animate-fade-in-down">
-            {loadingSettings ? (
-              <div className="h-16 bg-gray-300 rounded animate-pulse"></div>
-            ) : appSettings?.storeName ? (
-              appSettings.storeName
-            ) : (
-              "Discover Your Style"
-            )}
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto animate-fade-in-up">
-            Explore the latest trends and timeless classics. Quality clothing for every occasion.
-          </p>
-          <Link href="/shop">
-            <Button size="lg" className="animate-bounce-subtle group">
-              Shop Now <ChevronRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
-        </div>
+      <section className="relative py-20 md:py-32 rounded-none overflow-hidden h-[500px]">
         <div className="absolute inset-0 z-[-1] overflow-hidden">
           {loadingSettings ? (
             <div className="w-full h-full bg-gray-200 animate-pulse"></div>
@@ -113,14 +94,21 @@ function HomePageContent() {
               src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.heroImage.url}`} 
               alt={appSettings.heroImage.originalName || "Hero background"} 
               layout="fill" 
-              objectFit="cover" 
-              className="opacity-80" 
+              objectFit="cover"
               data-ai-hint="fashion runway model" 
             />
           ) : (
             <Image src="/hero.jpg" alt="Fashion background" layout="fill" objectFit="cover" className="opacity-80" data-ai-hint="fashion runway model" />
           )}
         </div>
+      </section>
+
+      <section className="container mx-auto text-center">
+        <Link href="/shop">
+            <Button size="lg" className="animate-bounce-subtle group">
+              Shop Now <ChevronRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
       </section>
 
       {/* Featured Products Section */}
