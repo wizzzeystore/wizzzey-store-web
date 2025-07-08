@@ -151,7 +151,7 @@ function HomePageContent() {
               <Link href={`/shop?category=${category.id}`} key={category.id} className="group block">
                 <div className="relative aspect-video overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-none">
                   <Image
-                    src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${category.image?.url}` || `https://placehold.co/400x300.png`}
+                    src={category.image?.url ? `${category.image.url}` : `https://placehold.co/400x300.png`}
                     alt={category.image?.originalName || ""}
                     layout="fill"
                     objectFit="cover"
