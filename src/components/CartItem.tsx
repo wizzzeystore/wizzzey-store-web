@@ -56,15 +56,6 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
             {item.selectedColor}
           </span>
         )}
-        {typeof item.stock === 'number' && (
-          <div className="text-xs mt-1">
-            {item.stock === 0 || item.status === 'out_of_stock' ? (
-              <span className="text-destructive">Out of Stock</span>
-            ) : (
-              <span className="text-green-600">In stock: {item.stock}</span>
-            )}
-          </div>
-        )}
         {item.tags && item.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
             {item.tags.map(tag => (

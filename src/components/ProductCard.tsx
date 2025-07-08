@@ -8,7 +8,7 @@ import { ShoppingCart, Eye } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -19,14 +19,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { toast } = useToast();
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (product.availableSizes && product.availableSizes.length > 0) {
+      setSelectedSize(product.availableSizes[0]);
+    } else {
+      setSelectedSize(undefined);
+    }
+  }, [product.availableSizes]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    addToCart(product);
+    addToCart(product, 1, selectedSize);
     toast({
       title: "Added to cart!",
-      description: `${product.name} has been added to your cart.`,
+      description: `${product.name} (${selectedSize ? `Size: ${selectedSize}` : "No size"}) has been added to your cart.`,
     });
   };
 
@@ -115,33 +124,39 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
 
         <div className="flex items-center gap-0.5 mb-1 justify-between">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <span
-              key={i}
-              className={`text-xs ${
-                i < ratings.average ? "text-yellow-400" : "text-gray-300"
-              }`}
-            >
-              ★
-            </span>
-          ))}
-          <span className="text-xs text-muted-foreground ml-0.5">
-            ({ratings.count})
-          </span>
+          {product.availableSizes && product.availableSizes.length > 0 ? (
+            <div className="flex gap-1 mb-1">
+              {product.availableSizes.map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  className={`px-2 py-1 rounded border text-xs font-medium transition-colors duration-200 ${
+                    selectedSize === size
+                      ? "bg-primary text-white border-primary"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedSize(size);
+                  }}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <Button
             variant="default"
             size="sm"
             onClick={handleAddToCart}
             className="w-8 mt-1 text-xs h-7 p-0"
             disabled={
-              (product.stock || 0) === 0 || product.status === "out_of_stock"
+              (product.stock || 0) === 0 || product.status === "out_of_stock" || (product.availableSizes && product.availableSizes.length > 0 && !selectedSize)
             }
           >
-            {(product.stock || 0) === 0 || product.status === "out_of_stock" ? (
-              "Out of Stock"
-            ) : (
-              <ShoppingCart size={14} />
-            )}
+            {(product.stock || 0) === 0 || product.status === "out_of_stock"
+              ? "Out of Stock"
+              : <ShoppingCart size={14} />}
           </Button>
         </div>
       </div>

@@ -99,6 +99,9 @@ export default function ProductDetailPage() {
     : 0;
   const ratings = product.ratings || { average: 0, count: 0 };
 
+
+  console.log('Log: product: ', product);
+
   return (
     <div className="container mx-auto py-6">
       <Button variant="outline" onClick={() => router.back()} className="mb-4">
@@ -250,10 +253,10 @@ export default function ProductDetailPage() {
                   }} />
                 </div>
               )}
-              {product.weight && (
+              {product.weight.value && product.weight.unit && (
                 <div><span className="font-medium text-foreground">Weight:</span> {product.weight.value} {product.weight.unit}</div>
               )}
-              {product.dimensions && (
+              {product.dimensions.length && product.dimensions.width && product.dimensions.height && product.dimensions.unit && (
                 <div><span className="font-medium text-foreground">Dimensions:</span> {product.dimensions.length} x {product.dimensions.width} x {product.dimensions.height} {product.dimensions.unit}</div>
               )}
             </div>
