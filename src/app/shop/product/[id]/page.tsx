@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import type { Product } from '@/lib/types';
-import { fetchProductById, fetchProducts } from '@/services/api';
+import { fetchProductById, fetchProducts, fetchBrands } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ShoppingCart, ArrowLeft, CheckCircle, Star } from 'lucide-react';
@@ -21,6 +21,7 @@ export default function ProductDetailPage() {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [brandName, setBrandName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
@@ -33,7 +34,7 @@ export default function ProductDetailPage() {
     if (typeof id === 'string') {
       setLoading(true);
       fetchProductById(id)
-        .then(data => {
+        .then(async data => {
           if (data) {
             setProduct(data);
             if (data.availableSizes && data.availableSizes.length > 0) {
@@ -42,7 +43,18 @@ export default function ProductDetailPage() {
             if (data.colors && data.colors.length > 0) {
               setSelectedColor(data.colors[0].name);
             }
-            fetchProducts({ page: 1, limit: 4, categoryId: data.categoryId }).then(relatedData => {
+            if (data.brandId) {
+              try {
+                const brands = await fetchBrands();
+                const brand = brands.find(b => b.id === data.brandId);
+                setBrandName(brand ? brand.name : null);
+              } catch (e) {
+                setBrandName(null);
+              }
+            } else {
+              setBrandName(null);
+            }
+            fetchProducts({ page: 1, limit: 4, categoryId: data.categoryId, brandId: data.brandId }).then(relatedData => {
               setRelatedProducts(relatedData.data.items.filter(p => p.id !== data.id));
             });
           } else {
@@ -149,6 +161,11 @@ export default function ProductDetailPage() {
           </div>
           
           <h1 className="text-2xl lg:text-3xl font-bold mb-2">{product.name}</h1>
+          {brandName && (
+            <div className="mb-2 text-sm text-muted-foreground">
+              Brand: <span className="font-semibold text-foreground">{brandName}</span>
+            </div>
+          )}
           
           <div className="flex items-center mb-3">
             <div className="flex text-yellow-400">
@@ -253,10 +270,10 @@ export default function ProductDetailPage() {
                   }} />
                 </div>
               )}
-              {product.weight.value && product.weight.unit && (
+              {product.weight?.value && product.weight?.unit && (
                 <div><span className="font-medium text-foreground">Weight:</span> {product.weight.value} {product.weight.unit}</div>
               )}
-              {product.dimensions.length && product.dimensions.width && product.dimensions.height && product.dimensions.unit && (
+              {product.dimensions?.length && product.dimensions?.width && product.dimensions?.height && product.dimensions?.unit && (
                 <div><span className="font-medium text-foreground">Dimensions:</span> {product.dimensions.length} x {product.dimensions.width} x {product.dimensions.height} {product.dimensions.unit}</div>
               )}
             </div>
