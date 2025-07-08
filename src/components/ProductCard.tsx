@@ -60,7 +60,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const ratings = product.ratings || { average: 0, count: 0 };
 
   return (
-    <div className="group relative w-full max-w-[200px] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+    <div className="group relative w-full lg:max-w-[300px] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
       {product.isFeatured && (
         <span className="absolute top-1 left-1 bg-yellow-400 text-xs font-bold px-1.5 py-0.5 rounded z-10">
           Featured

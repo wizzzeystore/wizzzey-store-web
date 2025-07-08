@@ -21,6 +21,7 @@ export default function ProductDetailPage() {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [randomCategoryProducts, setRandomCategoryProducts] = useState<Product[]>([]);
   const [brandName, setBrandName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -54,8 +55,13 @@ export default function ProductDetailPage() {
             } else {
               setBrandName(null);
             }
-            fetchProducts({ page: 1, limit: 4, categoryId: data.categoryId, brandId: data.brandId }).then(relatedData => {
-              setRelatedProducts(relatedData.data.items.filter(p => p.id !== data.id));
+            fetchProducts({ page: 1, limit: 12, categoryId: data.categoryId }).then(categoryData => {
+              // Filter for related products with same brandId, exclude current product
+              const related = categoryData.data.items.filter(p => p.id !== data.id && p.brandId === data.brandId);
+              setRelatedProducts(related);
+              // For random category products, exclude current and related products
+              const relatedIds = new Set([data.id, ...related.map(p => p.id)]);
+              setRandomCategoryProducts(categoryData.data.items.filter(p => !relatedIds.has(p.id)));
             });
           } else {
             toast({
@@ -134,7 +140,7 @@ export default function ProductDetailPage() {
           </div>
           {thumbnailImages.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
-              {thumbnailImages.map((img, index) => (
+              {thumbnailImages.slice(1, 4).map((img, index) => (
                 <div 
                   key={index} 
                   className={`relative aspect-square shadow-md overflow-hidden rounded-lg cursor-pointer transition-all duration-200 ${
@@ -239,17 +245,18 @@ export default function ProductDetailPage() {
                 className="w-16 text-center"
               />
             </div>
-          </div>
 
-          {(product.stock || 0) === 0 || product.status === 'out_of_stock' ? (
-            <Button size="lg" disabled className="w-full md:w-auto mb-4">
-              Out of Stock
-            </Button>
-          ) : (
-            <Button size="lg" onClick={handleAddToCart} className="w-full md:w-auto mb-4">
-              <ShoppingCart size={18} className="mr-2" /> Add to Cart
-            </Button>
-          )}
+
+            {(product.stock || 0) === 0 || product.status === 'out_of_stock' ? (
+              <Button size="lg" disabled className="w-full md:w-auto">
+                Out of Stock
+              </Button>
+            ) : (
+              <Button size="lg" onClick={handleAddToCart} className="w-full md:w-auto">
+                <ShoppingCart size={18} className="mr-2" /> Add to Cart
+              </Button>
+            )}
+          </div>
 
           {(product.stock || 0) > 0 && (
             <div className="flex items-center text-green-600 mb-4">
@@ -295,9 +302,21 @@ export default function ProductDetailPage() {
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <div className="mt-12">
-          <h2 className="text-xl font-bold mb-4">You Might Also Like</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <h2 className="text-xl font-bold mb-4 text-center">You Might Also Like</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 justify-center">
             {relatedProducts.map(p => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Random Category Products */}
+      {randomCategoryProducts.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-xl font-bold mb-4 text-center">Related Products</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 justify-center">
+            {randomCategoryProducts.map(p => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
