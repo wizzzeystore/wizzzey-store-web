@@ -429,7 +429,7 @@ const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
 const mapApiOrderToOrder = (apiOrder: ApiOrder): Order => {
   const baseUrl = API_BASE_URL || "";
   return {
-    id: apiOrder.id || apiOrder._id,
+    id: apiOrder._id,
     customerId: apiOrder.customerId,
     customerInfo: apiOrder.customerInfo,
     items: apiOrder.items.map((item) => {
@@ -922,4 +922,59 @@ export async function fetchAppSettings(): Promise<AppSettings> {
     console.error("Error fetching app settings:", error);
     throw error;
   }
+}
+
+// --- Returns/Exchanges API ---
+export async function fetchReturnRequests(orderId: string): Promise<{ returns: any[] }> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+  const res = await fetch(`${API_BASE_URL}/orders/${orderId}/returns`, {
+    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error('Failed to fetch return requests');
+  const data = await res.json();
+  return { returns: data?.data?.returns || [] };
+}
+
+export async function createReturnRequest(orderId: string, payload: {
+  itemId: string;
+  type: 'return' | 'exchange';
+  reason: string;
+  quantity: number;
+  exchangeForSize?: string;
+  exchangeForColor?: string;
+}): Promise<any> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+  const res = await fetch(`${API_BASE_URL}/orders/${orderId}/returns`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    let errMsg = 'Failed to create return/exchange request';
+    try { const err = await res.json(); errMsg = err.message || errMsg; } catch {}
+    throw new Error(errMsg);
+  }
+  return res.json();
+}
+
+// Cancel an order by ID (user-initiated)
+export async function cancelOrder(orderId: string): Promise<any> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+  const res = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ status: 'Cancelled' }),
+  });
+  if (!res.ok) {
+    let errMsg = 'Failed to cancel order';
+    try { const err = await res.json(); errMsg = err.message || errMsg; } catch {}
+    throw new Error(errMsg);
+  }
+  return res.json();
 }
