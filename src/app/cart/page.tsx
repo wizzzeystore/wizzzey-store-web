@@ -67,6 +67,9 @@ export default function CartPage() {
       quantity: item.quantity,
       price: item.price,
       brandId: item.brandId,
+      selectedSize: item.selectedSize,
+      selectedColor: item.selectedColor,
+      sku: item.sku,
     }));
 
     // Format shipping address into a single string for customerInfo

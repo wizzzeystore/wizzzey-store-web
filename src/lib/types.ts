@@ -58,11 +58,13 @@ export interface Category {
 
 export interface OrderItem {
   productId: string;
-  productName?: string; // For display
-  productImage?: string; // For display
+  productName: string;
+  productImage: string;
   quantity: number;
-  price: number; // Price at the time of order
+  price: number;
   brandId?: string;
+  selectedSize?: string;
+  selectedColor?: string;
 }
 
 export interface ShippingAddress {
