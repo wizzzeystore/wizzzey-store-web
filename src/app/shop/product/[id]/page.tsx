@@ -140,7 +140,7 @@ export default function ProductDetailPage() {
           </div>
           {thumbnailImages.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
-              {thumbnailImages.slice(1, 4).map((img, index) => (
+              {thumbnailImages.slice(1, 5).map((img, index) => (
                 <div 
                   key={index} 
                   className={`relative aspect-square shadow-md overflow-hidden rounded-lg cursor-pointer transition-all duration-200 ${
