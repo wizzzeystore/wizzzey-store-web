@@ -27,7 +27,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
   const { addToCart } = useCart();
 
@@ -110,6 +110,8 @@ export default function ProductDetailPage() {
   
   const allImages = product.images && product.images.length > 0 ? product.images : ["https://placehold.co/600x800.png"];
   const mainImage = allImages[selectedImageIndex] || allImages[0];
+  console.log('Log: img mainImage: ', mainImage);
+  console.log('Log: img allImages: ', allImages);
   const thumbnailImages = allImages.length > 1 ? allImages : [];
   const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
   const discount = hasDiscount
@@ -132,7 +134,7 @@ export default function ProductDetailPage() {
           <div className="relative w-full max-w-md aspect-[4/5] shadow-lg overflow-hidden rounded-lg">
             <Image
               src={mainImage}
-              alt={product.name}
+            alt={product.name}
               fill
               className="object-cover"
               priority
@@ -144,9 +146,9 @@ export default function ProductDetailPage() {
                 <div 
                   key={index} 
                   className={`relative aspect-square shadow-md overflow-hidden rounded-lg cursor-pointer transition-all duration-200 ${
-                    selectedImageIndex === index ? 'ring-2 ring-primary' : 'hover:ring-2 hover:ring-primary/50'
+                    selectedImageIndex === (index + 1) ? 'ring-2 ring-primary' : 'hover:ring-2 hover:ring-primary/50'
                   }`}
-                  onClick={() => setSelectedImageIndex(index)}
+                  onClick={() => setSelectedImageIndex(index + 1)}
                 >
                   <Image 
                     src={img} 

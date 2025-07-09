@@ -380,10 +380,6 @@ const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
   if (apiProduct.media && apiProduct.media.length > 0) {
     images = apiProduct.media.map((m) => `${baseUrl}/${m.url}`);
   }
-  
-  if (apiProduct.imageUrl) {
-    images = [`${baseUrl}/${apiProduct.imageUrl}`, ...images];
-  }
 
   if (images.length === 0) {
     images.push(

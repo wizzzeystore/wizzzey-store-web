@@ -61,10 +61,6 @@ function HomePageContent() {
       });
 
     setLoadingCategories(true);
-    // getMockCategories() // Categories still from mock as per current scope
-    //   .then(data => {
-    //     setFeaturedCategories(data.slice(0, 3)); // Show 3 featured categories
-    //   })
     fetchCategories().then(data => {
       setFeaturedCategories(data.slice(0, 3));
     })
