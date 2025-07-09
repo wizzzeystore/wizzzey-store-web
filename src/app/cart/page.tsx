@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import CartItem from '@/components/CartItem';
@@ -29,11 +29,28 @@ export default function CartPage() {
   const [confirmedOrder, setConfirmedOrder] = useState<Order | null>(null);
   const [isProcessingOrder, setIsProcessingOrder] = useState(false);
 
+  // Prefill shipping address and phone from user if available
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
-    street: '', city: '', state: '', country: '', zipCode: ''
+    street: user?.shippingAddress?.street || '',
+    city: user?.shippingAddress?.city || '',
+    state: user?.shippingAddress?.state || '',
+    country: user?.shippingAddress?.country || '',
+    zipCode: user?.shippingAddress?.zipCode || ''
   });
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(user?.phone || '');
   const [isAddressFormVisible, setIsAddressFormVisible] = useState(false);
+
+  // Update shipping address and phone if user changes (e.g., after login)
+  useEffect(() => {
+    setShippingAddress({
+      street: user?.shippingAddress?.street || '',
+      city: user?.shippingAddress?.city || '',
+      state: user?.shippingAddress?.state || '',
+      country: user?.shippingAddress?.country || '',
+      zipCode: user?.shippingAddress?.zipCode || ''
+    });
+    setPhone(user?.phone || '');
+  }, [user]);
 
 
   const handleProceedToCheckout = async () => {
