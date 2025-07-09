@@ -923,7 +923,7 @@ export async function fetchAppSettings(): Promise<AppSettings> {
 // --- Returns/Exchanges API ---
 export async function fetchReturnRequests(orderId: string): Promise<{ returns: any[] }> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-  const res = await fetch(`${API_BASE_URL}/orders/${orderId}/returns`, {
+  const res = await fetch(`${API_BASE_URL}/api/orders/${orderId}/returns`, {
     headers: token ? { 'Authorization': `Bearer ${token}` } : {},
   });
   if (!res.ok) throw new Error('Failed to fetch return requests');
@@ -940,7 +940,7 @@ export async function createReturnRequest(orderId: string, payload: {
   exchangeForColor?: string;
 }): Promise<any> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-  const res = await fetch(`${API_BASE_URL}/orders/${orderId}/returns`, {
+  const res = await fetch(`${API_BASE_URL}/api/orders/${orderId}/returns`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -959,7 +959,7 @@ export async function createReturnRequest(orderId: string, payload: {
 // Cancel an order by ID (user-initiated)
 export async function cancelOrder(orderId: string): Promise<any> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-  const res = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+  const res = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
