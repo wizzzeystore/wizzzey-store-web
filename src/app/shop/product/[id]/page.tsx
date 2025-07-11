@@ -4,14 +4,15 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import type { Product } from '@/lib/types';
-import { fetchProductById, fetchProducts, fetchBrands } from '@/services/api';
+import { fetchProductById, fetchProducts, fetchBrands, fetchSizeChartById } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ShoppingCart, ArrowLeft, CheckCircle, Star } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, CheckCircle, Star, Ruler } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ProductCard from '@/components/ProductCard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -27,7 +28,10 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [sizeChartModalOpen, setSizeChartModalOpen] = useState(false);
+  const [sizeChartImageUrl, setSizeChartImageUrl] = useState<string | null>(null);
+  const [sizeChartLoading, setSizeChartLoading] = useState(false);
 
   const { addToCart } = useCart();
 
@@ -100,6 +104,35 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleSizeChartModalOpen = async () => {
+    if (!product?.sizeChart) return;
+    
+    setSizeChartLoading(true);
+    try {
+      const sizeChart = await fetchSizeChartById(product.sizeChart as string);
+      if (sizeChart?.image) {
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+        const imageUrl = sizeChart.image.startsWith('http') 
+          ? sizeChart.image 
+          : `${baseUrl}${sizeChart.image}`;
+        setSizeChartImageUrl(imageUrl);
+      } else {
+        setSizeChartImageUrl(null);
+      }
+    } catch (error) {
+      console.error('Failed to fetch size chart:', error);
+      setSizeChartImageUrl(null);
+      toast({
+        title: 'Error Loading Size Chart',
+        description: 'Failed to load the size chart image.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSizeChartLoading(false);
+    }
+    setSizeChartModalOpen(true);
+  };
+
   if (loading) {
     return <div className="flex justify-center items-center min-h-[60vh]"><LoadingSpinner size={64} /></div>;
   }
@@ -109,7 +142,7 @@ export default function ProductDetailPage() {
   }
   
   const allImages = product.images && product.images.length > 0 ? product.images : ["https://placehold.co/600x800.png"];
-  const mainImage = allImages[selectedImageIndex] || allImages[0];
+  const mainImage = allImages[selectedImageIndex || 0] || allImages[0];
   console.log('Log: img mainImage: ', mainImage);
   console.log('Log: img allImages: ', allImages);
   const thumbnailImages = allImages.length > 1 ? allImages : [];
@@ -118,7 +151,6 @@ export default function ProductDetailPage() {
     ? product.discountPercentage || Math.round(100 - (product.price / (product.compareAtPrice || product.price)) * 100)
     : 0;
   const ratings = product.ratings || { average: 0, count: 0 };
-
 
   console.log('Log: product: ', product);
 
@@ -211,6 +243,22 @@ export default function ProductDetailPage() {
                   </Button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Size Chart Link - Show even if no sizes available */}
+          {product.sizeChart && (
+            <div className="mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSizeChartModalOpen}
+                className="text-blue-600 hover:text-blue-800 border-blue-200 hover:border-blue-300"
+                disabled={sizeChartLoading}
+              >
+                <Ruler size={16} className="mr-2" />
+                {sizeChartLoading ? 'Loading...' : 'View Size Chart'}
+              </Button>
             </div>
           )}
 
@@ -324,6 +372,40 @@ export default function ProductDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Size Chart Modal */}
+      <Dialog open={sizeChartModalOpen} onOpenChange={setSizeChartModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Ruler size={20} />
+              Size Chart - {product.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center">
+            {sizeChartLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <LoadingSpinner size={32} />
+              </div>
+            ) : sizeChartImageUrl ? (
+              <div className="relative w-full max-w-2xl">
+                <Image
+                  src={sizeChartImageUrl}
+                  alt={`Size chart for ${product.name}`}
+                  width={800}
+                  height={600}
+                  className="w-full h-auto object-contain rounded-lg"
+                  priority
+                />
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No size chart image available
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

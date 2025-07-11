@@ -50,6 +50,7 @@ interface ApiProduct {
   seo?: { title: string; description: string; keywords: string[] };
   slug?: string;
   sku?: string;
+  sizeChart?: string;
 }
 
 // Helper interface for the actual API response structure for products list
@@ -183,6 +184,13 @@ interface ApiCategory {
   // other fields if present
 }
 
+interface SizeChart {
+  _id: string;
+  id?: string;
+  title: string;
+  image: string;
+}
+
 interface RawCategoryListApiResponse {
   type: "OK" | "ERROR";
   message?: string;
@@ -196,6 +204,14 @@ interface RawCategoryListApiResponse {
     page?: number;
     limit?: number;
     // ... any other meta fields
+  };
+}
+
+interface RawSizeChartApiResponse {
+  type: "OK" | "ERROR";
+  message?: string;
+  data: {
+    sizeChart: SizeChart;
   };
 }
 
@@ -419,6 +435,7 @@ const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
     sku: apiProduct.sku,
     createdAt: apiProduct.createdAt,
     updatedAt: apiProduct.updatedAt,
+    sizeChart: apiProduct.sizeChart,
   };
 };
 
@@ -595,6 +612,13 @@ export async function fetchProductById(id: string): Promise<Product | null> {
     console.error(`Failed to fetch product by ID ${id}:`, error);
     throw error; // Re-throw other errors
   }
+}
+
+export async function fetchSizeChartById(id: string): Promise<SizeChart | null> {
+  const endpoint = `/api/size-charts/${id}`;
+  const response = await fetchFromAPI<RawSizeChartApiResponse>(endpoint);
+  console.log('Log: sizechart: ', response);
+  return response.data.sizeChart;
 }
 
 export async function fetchCategories(): Promise<Category[]> {

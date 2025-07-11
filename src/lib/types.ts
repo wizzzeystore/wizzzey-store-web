@@ -41,6 +41,7 @@ export interface Product {
   seo?: { title: string; description: string; keywords: string[] };
   slug?: string;
   sku?: string;
+  sizeChart?: string | { _id: string; title: string; image: string };
 }
 
 export interface Category {
