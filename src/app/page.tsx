@@ -167,19 +167,57 @@ function HomePageContent() {
       </section>
 
       {/* New Arrivals / Call to Action */}
-      <section className="bg-accent text-accent-foreground py-16 rounded-none">
-        <div className="container mx-auto text-center">
-          <Zap size={48} className="mx-auto mb-4 text-primary" />
-          <h2 className="text-3xl font-bold mb-4 font-headline">Fresh Styles Just In!</h2>
-          <p className="text-lg mb-8 max-w-xl mx-auto">
-            Don't miss out on our newest arrivals. Update your wardrobe with the latest looks.
-          </p>
-          <Link href="/shop?sortBy=createdAt&sortOrder=desc">
-            <Button size="lg" variant="secondary" className="bg-background text-primary hover:bg-primary/10">
-              Explore New Arrivals
-            </Button>
-          </Link>
-        </div>
+      <section className="relative py-16">
+        {loadingSettings ? (
+          <div className="container mx-auto text-center">
+            <div className="animate-pulse">
+              <div className="h-12 bg-gray-300 rounded mb-4 mx-auto w-64"></div>
+              <div className="h-6 bg-gray-300 rounded mb-8 mx-auto w-96"></div>
+              <div className="h-12 bg-gray-300 rounded w-48 mx-auto"></div>
+            </div>
+          </div>
+        ) : appSettings?.footerImage?.url ? (
+          <div className="relative overflow-hidden rounded-lg">
+            <Image
+              src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.footerImage.url}`}
+              alt={appSettings.footerImage.originalName || "Footer background"}
+              width={1200}
+              height={400}
+              className="w-full h-[400px] object-cover"
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+              <div className="text-center text-white">
+                <Zap size={48} className="mx-auto mb-4 text-white" />
+                <h2 className="text-3xl font-bold mb-4 font-headline">
+                  {appSettings.footerText?.title || 'Fresh Styles Just In!'}
+                </h2>
+                <p className="text-lg mb-8 max-w-xl mx-auto">
+                  {appSettings.footerText?.description || "Don't miss out on our newest arrivals. Update your wardrobe with the latest looks."}
+                </p>
+                <Link href={appSettings.footerText?.buttonLink || "/shop?sortBy=createdAt&sortOrder=desc"}>
+                  <Button size="lg" variant="secondary" className="bg-white text-gray-900 hover:bg-gray-100">
+                    {appSettings.footerText?.buttonText || 'Explore New Arrivals'}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="container mx-auto text-center">
+            <Zap size={48} className="mx-auto mb-4 text-primary" />
+            <h2 className="text-3xl font-bold mb-4 font-headline">
+              {appSettings?.footerText?.title || 'Fresh Styles Just In!'}
+            </h2>
+            <p className="text-lg mb-8 max-w-xl mx-auto">
+              {appSettings?.footerText?.description || "Don't miss out on our newest arrivals. Update your wardrobe with the latest looks."}
+            </p>
+            <Link href={appSettings?.footerText?.buttonLink || "/shop?sortBy=createdAt&sortOrder=desc"}>
+              <Button size="lg" variant="secondary" className="bg-background text-primary hover:bg-primary/10">
+                {appSettings?.footerText?.buttonText || 'Explore New Arrivals'}
+              </Button>
+            </Link>
+          </div>
+        )}
       </section>
     </div>
   );
