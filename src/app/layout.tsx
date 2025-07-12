@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import { AppSettingsProvider } from '@/context/AppSettingsContext';
+import MaintenanceWrapper from '@/components/MaintenanceWrapper';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -29,11 +30,13 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             <AppSettingsProvider>
-              <Header />
-              <main className="flex-grow container mx-auto px-4 py-8">
-                {children}
-              </main>
-              <Footer />
+              <MaintenanceWrapper>
+                <Header />
+                <main className="flex-grow container mx-auto px-4 py-8">
+                  {children}
+                </main>
+                <Footer />
+              </MaintenanceWrapper>
               <Toaster />
             </AppSettingsProvider>
           </CartProvider>
