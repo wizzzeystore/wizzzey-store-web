@@ -175,7 +175,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
         </Button>
       </div>
       
-      <Accordion type="multiple" defaultValue={['categories', 'price', 'size', 'color', 'brand', 'sort']} className="w-full">
+      <Accordion type="multiple" defaultValue={[]} className="w-full">
         {availableFilters.categories.length > 0 && (
             <AccordionItem value="categories">
             <AccordionTrigger className="text-lg font-medium">Categories</AccordionTrigger>
