@@ -177,7 +177,7 @@ function HomePageContent() {
             </div>
           </div>
         ) : appSettings?.footerImage?.url ? (
-          <div className="relative overflow-hidden rounded-lg">
+          <div className="overflow-hidden rounded-lg" onClick={() => router.push(`/shop?sortBy=createdAt&sortOrder=desc`)} style={{ cursor: 'pointer' }}>
             <Image
               src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.footerImage.url}`}
               alt={appSettings.footerImage.originalName || "Footer background"}
@@ -185,7 +185,7 @@ function HomePageContent() {
               height={400}
               className="w-full h-[400px] object-cover"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+            {/* <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
               <div className="text-center text-white">
                 <Zap size={48} className="mx-auto mb-4 text-white" />
                 <h2 className="text-3xl font-bold mb-4 font-headline">
@@ -200,7 +200,7 @@ function HomePageContent() {
                   </Button>
                 </Link>
               </div>
-            </div>
+            </div> */}
           </div>
         ) : (
           <div className="container mx-auto text-center">
