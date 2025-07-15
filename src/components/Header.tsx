@@ -23,11 +23,14 @@ const Header = () => {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchWrapperRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   useEffect(() => {
-    if (searchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
+    if (searchOpen && searchWrapperRef.current) {
+      // Use setTimeout to ensure focus after render/animation
+      setTimeout(() => {
+        searchWrapperRef.current && searchWrapperRef.current.querySelector('input')?.focus();
+      }, 50);
     }
   }, [searchOpen]);
 
@@ -47,21 +50,22 @@ const Header = () => {
       .finally(() => setSearchLoading(false));
   }, [searchValue]);
 
-  // Close dropdown on click outside
+  // Close dropdown and search bar on click outside
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (
-        searchInputRef.current &&
-        !(searchInputRef.current as HTMLInputElement).contains(e.target as Node)
+        searchWrapperRef.current &&
+        !searchWrapperRef.current.contains(e.target as Node)
       ) {
         setShowDropdown(false);
+        setSearchOpen(false);
       }
     }
-    if (showDropdown) {
+    if (searchOpen || showDropdown) {
       document.addEventListener('mousedown', handleClick);
       return () => document.removeEventListener('mousedown', handleClick);
     }
-  }, [showDropdown]);
+  }, [searchOpen, showDropdown]);
 
   return (
     <header className="bg-card">
@@ -82,7 +86,7 @@ const Header = () => {
           )}
         </Link>
         <nav className="flex items-center space-x-4 md:space-x-6">
-          <div className="relative flex items-center">
+          <div className="relative flex items-center" ref={searchWrapperRef}>
             <button
               className="p-2 hover:bg-muted rounded-full transition-colors"
               onClick={() => setSearchOpen((v) => !v)}
@@ -96,7 +100,6 @@ const Header = () => {
             >
               <div className="bg-white border rounded shadow-lg p-2 flex items-center">
                 <input
-                  ref={searchInputRef}
                   type="text"
                   className="w-full px-3 py-2 outline-none"
                   placeholder="Search products..."
