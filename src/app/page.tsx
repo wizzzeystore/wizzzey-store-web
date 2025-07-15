@@ -37,7 +37,7 @@ function HomePageContent() {
 
   useEffect(() => {
     setLoadingProducts(true);
-    fetchProducts({ page: 1, limit: 4 }) // Fetch 4 featured products using the new service
+    fetchProducts({ page: 1, limit: 4, isFeatured: true }) // Fetch 4 featured products only
       .then((response: PaginatedResponse<Product>) => {
         if (response && response.data && Array.isArray(response.data.items)) {
           console.log('Log: response.data.items', response.data.items);

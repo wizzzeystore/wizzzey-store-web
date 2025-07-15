@@ -482,6 +482,7 @@ export interface FetchProductsParams {
   name?: string;
   inStock?: boolean;
   product_ids?: string[]; // Array of product IDs to fetch specific products
+  isFeatured?: boolean; // <-- Add this line
 }
 
 export async function fetchProducts(
@@ -500,7 +501,12 @@ export async function fetchProducts(
 
   Object.entries(otherFilters).forEach(([key, value]) => {
     if (value !== undefined && value !== null && String(value).trim() !== "") {
-      query.set(key, String(value));
+      // Special handling for boolean isFeatured
+      if (key === "isFeatured") {
+        query.set(key, value ? "true" : "false");
+      } else {
+        query.set(key, String(value));
+      }
     }
   });
 
