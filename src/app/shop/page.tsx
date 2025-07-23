@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Product, PaginatedResponse, Category, AvailableFilters, AppliedFilters, Size, Color } from '@/lib/types';
+import { Product, PaginatedResponse, Category, AvailableFilters, AppliedFilters, Size, Color, Brand } from '@/lib/types';
 import { fetchProducts, fetchCategories, fetchBrands } from '@/services/api'; 
 import ProductCard from '@/components/ProductCard';
 import FilterPanel from '@/components/FilterPanel';
@@ -69,7 +69,7 @@ function ShopContent() {
 
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
-  const [brands, setBrands] = useState([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [loadingBrands, setLoadingBrands] = useState(true);
 
   const parseFiltersFromUrl = useCallback((): AppliedFiltersStateFromPanel & { sizes?: Size[], colors?: Color[], brandIds?: string[] } => {
@@ -87,40 +87,10 @@ function ShopContent() {
     
     let productsIds: string[] | undefined = undefined;
     if (productsIdsStr) {
-      try {
-        // First try to parse as JSON
-        productsIds = JSON.parse(productsIdsStr);
-        // Ensure it's an array
-        if (!Array.isArray(productsIds)) {
-          console.warn('products_ids parameter is not an array, ignoring');
-          productsIds = undefined;
-        }
-      } catch (error) {
-        console.warn('Failed to parse products_ids as JSON, trying alternative formats:', error);
-        
-        // Try to parse as comma-separated values within brackets
-        // Handle format like: [id1, id2, id3] or [id1,id2,id3]
-        const bracketMatch = productsIdsStr.match(/^\[(.*)\]$/);
-        if (bracketMatch) {
-          const idsString = bracketMatch[1];
-          // Split by comma and clean up whitespace
-          const ids = idsString.split(',').map(id => id.trim()).filter(id => id.length > 0);
-          if (ids.length > 0) {
-            productsIds = ids;
-            console.log('Parsed products_ids from bracket format:', productsIds);
-          }
-        } else {
-          // Try to parse as single ID
-          const singleId = productsIdsStr.trim();
-          if (singleId.length > 0) {
-            productsIds = [singleId];
-            console.log('Parsed products_ids as single ID:', productsIds);
-          }
-        }
-        
-        if (!productsIds) {
-          console.warn('Could not parse products_ids parameter in any format:', productsIdsStr);
-        }
+      // New format: comma-separated IDs, no brackets, no array
+      const ids = productsIdsStr.split(',').map(id => id.trim()).filter(id => id.length > 0);
+      if (ids.length > 0) {
+        productsIds = ids;
       }
     }
     
@@ -206,8 +176,6 @@ function ShopContent() {
         sortBy: filtersToApply.sortBy,
         sortOrder: filtersToApply.sortOrder,
         product_ids: filtersToApply.productsIds,
-        size: filtersToApply.sizes,
-        color: filtersToApply.colors,
         brandId: filtersToApply.brandIds?.[0],
       };
       
