@@ -109,12 +109,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         <div className="flex items-center gap-1 mb-1">
           <span className="text-sm font-bold text-primary">
-            ₹{product.price.toFixed(2)}
+            ₹{product?.price?.toFixed(2)}
           </span>
           {hasDiscount && (
             <>
               <span className="text-xs line-through text-muted-foreground">
-                ₹{product.compareAtPrice?.toFixed(2)}
+                ₹{product?.compareAtPrice?.toFixed(2)}
               </span>
               <span className="text-xs text-green-600 font-semibold">
                 {discount}% OFF

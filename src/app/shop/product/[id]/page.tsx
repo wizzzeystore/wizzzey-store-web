@@ -28,7 +28,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [sizeChartModalOpen, setSizeChartModalOpen] = useState(false);
   const [sizeChartImageUrl, setSizeChartImageUrl] = useState<string | null>(null);
   const [sizeChartLoading, setSizeChartLoading] = useState(false);
@@ -141,8 +141,9 @@ export default function ProductDetailPage() {
     return <div className="text-center py-10 text-xl">Product not found. It might have been removed or the link is incorrect.</div>;
   }
   
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const allImages = product.images && product.images.length > 0 ? product.images : ["https://placehold.co/600x800.png"];
-  const mainImage = allImages[selectedImageIndex || 0] || allImages[0];
+  const mainImage = allImages[selectedImageIndex] || allImages[0];
   console.log('Log: img mainImage: ', mainImage);
   console.log('Log: img allImages: ', allImages);
   const thumbnailImages = allImages.length > 1 ? allImages : [];
@@ -160,31 +161,40 @@ export default function ProductDetailPage() {
         <ArrowLeft size={16} className="mr-2" /> Back to Shop
       </Button>
       
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-[auto,1fr] gap-4">
         {/* Product Images */}
-        <div className="flex flex-col gap-3">
-          <div className="relative w-full max-w-md aspect-[4/5] shadow-lg overflow-hidden rounded-lg">
+        <div className="flex md:flex-row flex-col gap-3 min-w-0">
+          {/* Main Image */}
+          <div className="relative w-full aspect-[4/5] shadow-lg overflow-hidden rounded-lg flex-1 min-w-0">
             <Image
               src={mainImage}
-            alt={product.name}
+              alt={product.name}
               fill
               className="object-cover"
               priority
             />
           </div>
+          {/* Thumbnails (Desktop: right, Mobile: bottom) */}
           {thumbnailImages.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {thumbnailImages.slice(1, 5).map((img, index) => (
-                <div 
-                  key={index} 
-                  className={`relative aspect-square shadow-md overflow-hidden rounded-lg cursor-pointer transition-all duration-200 ${
-                    selectedImageIndex === (index + 1) ? 'ring-2 ring-primary' : 'hover:ring-2 hover:ring-primary/50'
+            <div
+              className={
+                "md:ml-4 flex md:flex-col flex-row gap-2 " +
+                "md:max-h-[420px] md:overflow-y-auto md:w-20 w-full"
+              }
+            >
+              {thumbnailImages.map((img, index) => (
+                <div
+                  key={index}
+                  className={`relative aspect-square w-16 h-16 shadow-md overflow-hidden rounded-lg cursor-pointer transition-all duration-200 ${
+                    selectedImageIndex === index ? 'ring-2 ring-primary' : 'hover:ring-2 hover:ring-primary/50'
                   }`}
-                  onClick={() => setSelectedImageIndex(index + 1)}
+                  onMouseEnter={!isMobile ? () => setSelectedImageIndex(index) : undefined}
+                  onClick={isMobile ? () => setSelectedImageIndex(index) : undefined}
+                  style={{ flex: '0 0 auto' }}
                 >
-                  <Image 
-                    src={img} 
-                    alt={`${product.name} thumbnail ${index + 1}`} 
+                  <Image
+                    src={img}
+                    alt={`${product.name} thumbnail ${index + 1}`}
                     fill
                     className="object-cover"
                   />
