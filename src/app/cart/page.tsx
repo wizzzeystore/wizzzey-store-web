@@ -163,9 +163,12 @@ export default function CartPage() {
                 <span>Subtotal ({itemCount} items)</span>
                 <span>₹{cartTotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span>Shipping</span>
-                <span className="text-green-600">FREE</span>
+                <span className="flex items-center gap-1">
+                  <span className="line-through text-muted-foreground">₹180</span>
+                  <span className="text-green-600">FREE</span>
+                </span>
               </div>
               <Separator />
               <div className="flex justify-between text-xl font-bold">
