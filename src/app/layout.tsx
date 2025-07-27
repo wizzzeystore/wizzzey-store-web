@@ -11,6 +11,11 @@ import Footer from '@/components/Footer';
 export const metadata: Metadata = {
   title: 'Wizzzey Store - Your Fashion Destination',
   description: 'Discover the latest trends in clothing at Wizzzey Store.',
+  icons: {
+    icon: '/wizzzey_logo.png',
+    shortcut: '/wizzzey_logo.png',
+    apple: '/wizzzey_logo.png',
+  },
 };
 
 export default function RootLayout({
