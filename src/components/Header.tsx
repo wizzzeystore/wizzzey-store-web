@@ -70,22 +70,32 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50">
       {/* Top Announcement Bar */}
-      <div className="bg-black text-white py-2 overflow-hidden">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <div className="flex-1 overflow-hidden">
-            <div className="animate-marquee whitespace-nowrap">
-              <span className="text-sm font-medium inline-block">ADDITIONAL 10% OFF ON PREPAID ORDERS</span>
+      {appSettings?.announcementBar?.enabled && (
+        <div 
+          className="py-2 overflow-hidden"
+          style={{
+            backgroundColor: appSettings.announcementBar.backgroundColor || '#000000',
+            color: appSettings.announcementBar.textColor || '#ffffff'
+          }}
+        >
+          <div className="container mx-auto px-4 flex justify-between items-center">
+            <div className="flex-1 overflow-hidden">
+              <div className="animate-marquee whitespace-nowrap">
+                <span className="text-sm font-medium inline-block">
+                  {appSettings.announcementBar.text || 'ADDITIONAL 10% OFF ON PREPAID ORDERS'}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button className="bg-white text-black px-3 py-1 rounded text-sm font-medium flex items-center gap-1">
+                <span>🇮🇳</span>
+                <span>INR</span>
+                <span>▼</span>
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button className="bg-white text-black px-3 py-1 rounded text-sm font-medium flex items-center gap-1">
-              <span>🇮🇳</span>
-              <span>INR</span>
-              <span>▼</span>
-            </button>
-          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Header Bar */}
       <div className="bg-white border-b border-gray-200">

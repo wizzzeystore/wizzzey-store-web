@@ -172,6 +172,59 @@ export enum Color {
 
 
 
+export interface AppSettings {
+  storeName: string;
+  defaultStoreEmail: string;
+  maintenanceMode: boolean;
+  darkMode: boolean;
+  themeAccentColor: string;
+  storeLogoUrl: string;
+  storeLogo?: {
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+    url: string;
+  };
+  heroImage?: {
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+    url: string;
+  };
+  footerImage?: {
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+    url: string;
+  };
+  footerText?: {
+    title: string;
+    description: string;
+    buttonText: string;
+    buttonLink: string;
+  };
+  announcementBar?: {
+    enabled: boolean;
+    text: string;
+    backgroundColor: string;
+    textColor: string;
+  };
+  notifications: {
+    newOrderEmails: boolean;
+    lowStockAlerts: boolean;
+    productUpdatesNewsletter: boolean;
+  };
+  apiSettings: {
+    apiKey?: string;
+    apiKeyLastGenerated?: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface PaginatedResponse<T> {
   type: "OK" | "ERROR";
   message?: string;
