@@ -345,17 +345,6 @@ export default function ProductDetailPage() {
               )}
             </div>
           </div>
-
-          {/* Tags */}
-          {product.tags && product.tags.length > 0 && (
-            <div className="mt-4">
-              <div className="flex flex-wrap gap-2">
-                {product.tags.map(tag => (
-                  <span key={tag} className="px-2 py-1 text-xs bg-accent rounded">{tag}</span>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
