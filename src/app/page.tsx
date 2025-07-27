@@ -37,7 +37,7 @@ function HomePageContent() {
 
   useEffect(() => {
     setLoadingProducts(true);
-    fetchProducts({ page: 1, limit: 4, isFeatured: true }) // Fetch 4 featured products only
+    fetchProducts({ page: 1, limit: 12, isFeatured: true }) // Fetch 4 featured products only
       .then((response: PaginatedResponse<Product>) => {
         if (response && response.data && Array.isArray(response.data.items)) {
           console.log('Log: response.data.items', response.data.items);
@@ -62,7 +62,7 @@ function HomePageContent() {
 
     setLoadingCategories(true);
     fetchCategories().then(data => {
-      setFeaturedCategories(data.slice(0, 3));
+      setFeaturedCategories(data.slice(0, 9));
     })
       .catch(error => {
         console.error("Failed to fetch featured categories:", error);

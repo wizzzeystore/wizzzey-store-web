@@ -75,7 +75,7 @@ const Header = () => {
             <div className="w-[100px] h-[100px] bg-gray-200 animate-pulse rounded"></div>
           ) : appSettings?.storeLogo?.url ? (
             <Image 
-              src={`${process.env.NEXT_PUBLIC_API_URL}${appSettings.storeLogo.url}`} 
+              src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.storeLogo.url}`} 
               alt={appSettings.storeName || "Store Logo"} 
               width={100} 
               height={100}
