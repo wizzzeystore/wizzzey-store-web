@@ -112,14 +112,38 @@ function HomePageContent() {
         <div className="absolute inset-0 z-[-1] overflow-hidden">
           {loadingSettings ? (
             <div className="w-full h-full bg-gray-200 animate-pulse"></div>
-          ) : appSettings?.heroImage?.url ? (
-            <Image 
-              src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.heroImage.url}`} 
-              alt={appSettings.heroImage.originalName || "Hero background"} 
-              layout="fill" 
-              objectFit="cover"
-              data-ai-hint="fashion runway model" 
-            />
+          ) : appSettings?.heroImage?.url || appSettings?.heroImageMobile?.url ? (
+            <picture>
+              {appSettings?.heroImageMobile?.url && (
+                <source
+                  srcSet={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.heroImageMobile.url}`}
+                  media="(max-width: 767px)"
+                />
+              )}
+              {appSettings?.heroImage?.url && (
+                <source
+                  srcSet={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.heroImage.url}`}
+                  media="(min-width: 768px)"
+                />
+              )}
+              <img
+                src={
+                  appSettings?.heroImageMobile?.url
+                    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.heroImageMobile.url}`
+                    : appSettings?.heroImage?.url
+                    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.heroImage.url}`
+                    : "/hero.jpg"
+                }
+                alt={
+                  appSettings?.heroImageMobile?.originalName ||
+                  appSettings?.heroImage?.originalName ||
+                  "Hero background"
+                }
+                className="w-full h-full object-cover"
+                style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                data-ai-hint="fashion runway model"
+              />
+            </picture>
           ) : (
             <Image src="/hero.jpg" alt="Fashion background" layout="fill" objectFit="cover" className="opacity-80" data-ai-hint="fashion runway model" />
           )}
@@ -231,31 +255,39 @@ function HomePageContent() {
               <div className="h-12 bg-gray-300 rounded w-48 mx-auto"></div>
             </div>
           </div>
-        ) : appSettings?.footerImage?.url ? (
+        ) : appSettings?.footerImage?.url || appSettings?.footerImageMobile?.url ? (
           <div className="overflow-hidden rounded-lg" onClick={() => router.push(`/shop?sortBy=createdAt&sortOrder=desc`)} style={{ cursor: 'pointer' }}>
-            <Image
-              src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.footerImage.url}`}
-              alt={appSettings.footerImage.originalName || "Footer background"}
-              width={1200}
-              height={400}
-              className="w-full h-[400px] object-cover"
-            />
-            {/* <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-              <div className="text-center text-white">
-                <Zap size={48} className="mx-auto mb-4 text-white" />
-                <h2 className="text-3xl font-bold mb-4 font-headline">
-                  {appSettings.footerText?.title || 'Fresh Styles Just In!'}
-                </h2>
-                <p className="text-lg mb-8 max-w-xl mx-auto">
-                  {appSettings.footerText?.description || "Don't miss out on our newest arrivals. Update your wardrobe with the latest looks."}
-                </p>
-                <Link href={appSettings.footerText?.buttonLink || "/shop?sortBy=createdAt&sortOrder=desc"}>
-                  <Button size="lg" variant="secondary" className="bg-white text-gray-900 hover:bg-gray-100">
-                    {appSettings.footerText?.buttonText || 'Explore New Arrivals'}
-                  </Button>
-                </Link>
-              </div>
-            </div> */}
+            <picture>
+              {appSettings?.footerImageMobile?.url && (
+                <source
+                  srcSet={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.footerImageMobile.url}`}
+                  media="(max-width: 767px)"
+                />
+              )}
+              {appSettings?.footerImage?.url && (
+                <source
+                  srcSet={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.footerImage.url}`}
+                  media="(min-width: 768px)"
+                />
+              )}
+              <img
+                src={
+                  appSettings?.footerImageMobile?.url
+                    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.footerImageMobile.url}`
+                    : appSettings?.footerImage?.url
+                    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.footerImage.url}`
+                    : "/hero.jpg"
+                }
+                alt={
+                  appSettings?.footerImageMobile?.originalName ||
+                  appSettings?.footerImage?.originalName ||
+                  "Footer background"
+                }
+                className="w-full h-[400px] object-cover"
+                style={{ objectFit: 'cover', width: '100%', height: '400px' }}
+                data-ai-hint="fashion footer image"
+              />
+            </picture>
           </div>
         ) : (
           <div className="container mx-auto text-center">
