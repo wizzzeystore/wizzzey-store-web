@@ -135,7 +135,10 @@ export enum Size {
   M = 'M',
   L = 'L',
   XL = 'XL',
-  XXL = 'XXL',
+  XXL = '2XL',
+  XXXL = '3XL',
+  XXXXL = '4XL',
+  XXXXXL = '5XL',
 }
 export enum Color {
   RED = 'Red',

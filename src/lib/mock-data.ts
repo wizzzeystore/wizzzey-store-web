@@ -9,12 +9,12 @@ export const mockCategories: Category[] = [
 ];
 
 export const mockProducts: Product[] = [
-  { id: 'prod1', name: 'Classic Crew Neck Tee', description: 'A timeless classic, perfect for everyday wear.', price: 25.99, categoryId: 'cat1', images: ['https://placehold.co/600x800.png', 'https://placehold.co/600x800.png'], inStock: true, categoryName: 'T-Shirts', colors: [{name: 'Red', code: '#FF0000'}, {name: 'Blue', code: '#0000FF'}], availableSizes: ['S', 'M', 'L'] },
+  { id: 'prod1', name: 'Classic Crew Neck Tee', description: 'A timeless classic, perfect for everyday wear.', price: 25.99, categoryId: 'cat1', images: ['https://placehold.co/600x800.png', 'https://placehold.co/600x800.png'], inStock: true, categoryName: 'T-Shirts', colors: [{name: 'Red', code: '#FF0000'}, {name: 'Blue', code: '#0000FF'}], availableSizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'] },
   { id: 'prod2', name: 'Slim Fit Denim Jeans', description: 'Modern slim fit jeans with a comfortable stretch.', price: 59.99, categoryId: 'cat2', images: ['https://placehold.co/600x800.png'], inStock: true, categoryName: 'Jeans', availableSizes: ['30', '32', '34'] },
   { id: 'prod3', name: 'Floral Sundress', description: 'Light and airy sundress with a beautiful floral pattern.', price: 45.00, categoryId: 'cat3', images: ['https://placehold.co/600x800.png'], inStock: true, categoryName: 'Dresses' },
   { id: 'prod4', name: 'Vintage Leather Jacket', description: 'A stylish vintage leather jacket for a rugged look.', price: 120.50, categoryId: 'cat4', images: ['https://placehold.co/600x800.png'], inStock: false, categoryName: 'Outerwear' },
   { id: 'prod5', name: 'Running Sneakers', description: 'High-performance sneakers for your daily run.', price: 75.00, categoryId: 'cat5', images: ['https://placehold.co/600x800.png'], inStock: true, categoryName: 'Shoes' },
-  { id: 'prod6', name: 'Graphic Print T-Shirt', description: 'Cool graphic print t-shirt for a bold statement.', price: 29.99, categoryId: 'cat1', images: ['https://placehold.co/600x800.png'], inStock: true, categoryName: 'T-Shirts' },
+  { id: 'prod6', name: 'Graphic Print T-Shirt', description: 'Cool graphic print t-shirt for a bold statement.', price: 29.99, categoryId: 'cat1', images: ['https://placehold.co/600x800.png'], inStock: true, categoryName: 'T-Shirts', availableSizes: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'] },
   { id: 'prod7', name: 'Distressed Boyfriend Jeans', description: 'Comfortable and trendy distressed boyfriend jeans.', price: 65.00, categoryId: 'cat2', images: ['https://placehold.co/600x800.png'], inStock: true, categoryName: 'Jeans' },
   { id: 'prod8', name: 'Evening Gown', description: 'Elegant evening gown for special occasions.', price: 150.00, categoryId: 'cat3', images: ['https://placehold.co/600x800.png'], inStock: true, categoryName: 'Dresses' },
   { id: 'prod9', name: 'Hooded Parka', description: 'Warm and waterproof hooded parka for cold weather.', price: 99.99, categoryId: 'cat4', images: ['https://placehold.co/600x800.png'], inStock: true, categoryName: 'Outerwear' },
@@ -129,6 +129,14 @@ export const getMockAvailableFilters = async (): Promise<AvailableFilters> => {
       min: Math.min(...prices, 0),
       max: Math.max(...prices, 200), // Set a reasonable max if products are empty
     },
+    sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'],
+    colors: ['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow', 'Orange', 'Purple', 'Grey', 'Brown'],
+    brands: [
+      { id: 'brand1', name: 'Nike' },
+      { id: 'brand2', name: 'Adidas' },
+      { id: 'brand3', name: 'Puma' },
+      { id: 'brand4', name: 'Under Armour' },
+    ],
   };
 };
 
