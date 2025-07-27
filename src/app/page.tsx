@@ -11,15 +11,17 @@ import { useAppSettings } from '@/context/AppSettingsContext';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { ChevronRight, Zap } from 'lucide-react';
+import { ChevronRight, Zap, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast'; // Import useToast
 import { date } from 'zod';
 
 // Component that handles the search params logic
 function HomePageContent() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [topSellingProducts, setTopSellingProducts] = useState<Product[]>([]);
   const [featuredCategories, setFeaturedCategories] = useState<Category[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingTopSelling, setLoadingTopSelling] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const { toast } = useToast(); // Initialize toast
   const searchParams = useSearchParams();
@@ -37,7 +39,7 @@ function HomePageContent() {
 
   useEffect(() => {
     setLoadingProducts(true);
-    fetchProducts({ page: 1, limit: 12, isFeatured: true }) // Fetch 4 featured products only
+    fetchProducts({ page: 1, limit: 12, isFeatured: true }) // Fetch 12 featured products
       .then((response: PaginatedResponse<Product>) => {
         if (response && response.data && Array.isArray(response.data.items)) {
           console.log('Log: response.data.items', response.data.items);
@@ -58,6 +60,31 @@ function HomePageContent() {
       })
       .finally(() => {
         setLoadingProducts(false);
+      });
+
+    // Fetch top selling products (random, non-featured)
+    setLoadingTopSelling(true);
+    fetchProducts({ page: 1, limit: 12, random: true })
+      .then((response: PaginatedResponse<Product>) => {
+        if (response && response.data && Array.isArray(response.data.items)) {
+          console.log('Log: top selling products', response.data.items);
+          setTopSellingProducts(response.data.items);
+        } else {
+          console.warn("Top selling products API response is not in the expected format or items are missing:", response);
+          setTopSellingProducts([]);
+        }
+      })
+      .catch(error => {
+        console.error("Failed to fetch top selling products:", error);
+        toast({ // Display toast on error
+          title: "Error Loading Top Selling Products",
+          description: error.message || "Could not fetch top selling products. Please try again later.",
+          variant: "destructive",
+        });
+        setTopSellingProducts([]);
+      })
+      .finally(() => {
+        setLoadingTopSelling(false);
       });
 
     setLoadingCategories(true);
@@ -129,6 +156,34 @@ function HomePageContent() {
           </div>
         ) : (
           <p>No featured products available at the moment. Try refreshing the page or check back later.</p>
+        )}
+      </section>
+
+      {/* Top Selling Products Section */}
+      <section>
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-3">
+            <TrendingUp size={32} className="text-primary" />
+            <h2 className="text-3xl font-bold font-headline">Top Selling Products</h2>
+          </div>
+          <Link href="/shop">
+            <Button variant="outline" className="group">
+              View All <ChevronRight size={18} className="ml-1 group-hover:translate-x-0.5 transition-transform" />
+            </Button>
+          </Link>
+        </div>
+        {loadingTopSelling ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => <div key={i} className="bg-card p-4 shadow-md rounded-none h-[400px] flex items-center justify-center"><LoadingSpinner /></div>)}
+          </div>
+        ) : topSellingProducts.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {topSellingProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <p>No top selling products available at the moment. Try refreshing the page or check back later.</p>
         )}
       </section>
 
