@@ -41,7 +41,7 @@ const Header = () => {
       return;
     }
     setSearchLoading(true);
-    fetchProducts({ name: searchValue, limit: 8 })
+    fetchProducts({ term: searchValue, limit: 8 })
       .then(res => {
         setSearchResults(res.data.items || []);
         setShowDropdown(true);

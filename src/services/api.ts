@@ -483,6 +483,7 @@ export interface FetchProductsParams {
   inStock?: boolean;
   product_ids?: string[]; // Array of product IDs to fetch specific products
   isFeatured?: boolean; // <-- Add this line
+  term?: string;
 }
 
 export async function fetchProducts(
