@@ -68,7 +68,7 @@ const Header = () => {
   }, [searchOpen, showDropdown]);
 
   return (
-    <header className="sticky top-0 z-50">
+    <header className="">
       {/* Top Announcement Bar */}
       {appSettings?.announcementBar?.enabled && (
         <div 
