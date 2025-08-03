@@ -105,19 +105,18 @@ const Header = () => {
           {/* Logo on left */}
           <Link href="/" className="flex items-center">
             {loading ? (
-              <div className="w-8 h-8 bg-gray-200 animate-pulse rounded"></div>
+              <div className="w-20 h-20 bg-gray-200 animate-pulse rounded"></div>
             ) : appSettings?.storeLogo?.url ? (
               <Image 
                 src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.storeLogo.url}`} 
                 alt={appSettings.storeName || "Store Logo"} 
-                width={32} 
-                height={32}
+                width={100} 
+                height={100}
                 className="object-contain"
               />
             ) : (
-              <Image src="/wizzzey_logo.png" alt="Wizzzey Store" width={32} height={32} className="object-contain" />
+              <Image src="/wizzzey_logo.png" alt="Wizzzey Store" width={100} height={100} className="object-contain" />
             )}
-            <span className="ml-2 text-lg sm:text-2xl font-bold text-pink-500">WIZZZEY</span>
           </Link>
           {/* Hamburger menu on right (mobile only), nav icons on right (desktop only) */}
           <div className="flex items-center">
