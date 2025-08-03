@@ -343,6 +343,10 @@ export default function ProductDetailPage() {
               {product.dimensions?.length && product.dimensions?.width && product.dimensions?.height && product.dimensions?.unit && (
                 <div><span className="font-medium text-foreground">Dimensions:</span> {product.dimensions.length} x {product.dimensions.width} x {product.dimensions.height} {product.dimensions.unit}</div>
               )}
+              {/* sku */}
+              {product.sku && (
+                <div><span className="font-medium text-foreground">SKU:</span> {product.sku}</div>
+              )}
             </div>
           </div>
         </div>
