@@ -60,13 +60,6 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
             </span>
           )}
         </div>
-        {item.tags && item.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1 justify-center md:justify-start">
-            {item.tags.map(tag => (
-              <span key={tag} className="px-2 py-0.5 text-xs bg-accent rounded">{tag}</span>
-            ))}
-          </div>
-        )}
         <div className="flex flex-col md:flex-row md:items-center md:space-x-2 mt-2 md:mt-0 w-full">
           <div className="flex items-center justify-center md:justify-start space-x-2 mb-2 md:mb-0">
             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleQuantityChange(item.quantity - 1)} disabled={item.quantity <= 1}>
