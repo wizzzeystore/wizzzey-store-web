@@ -90,8 +90,8 @@ const Header = () => {
             </div>
             <div className="flex items-center gap-2 flex-shrink-0 mt-2 sm:mt-0">
               <button className="bg-white text-black px-2 sm:px-3 py-1 rounded text-xs sm:text-sm font-medium flex items-center gap-1">
-                <span>🇮🇳</span>
-                <span>INR</span>
+                <span>🇳🇵</span>
+                <span>NPR</span>
                 <span>▼</span>
               </button>
             </div>
