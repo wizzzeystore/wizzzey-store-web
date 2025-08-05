@@ -172,6 +172,15 @@ export default function ProductDetailPage() {
               fill
               className="object-cover"
               priority
+              sizes="(max-width: 768px) 100vw, 50vw"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
             />
           </div>
           {/* Thumbnails (Desktop: right, Mobile: bottom) */}
@@ -197,6 +206,15 @@ export default function ProductDetailPage() {
                     alt={`${product.name} thumbnail ${index + 1}`}
                     fill
                     className="object-cover"
+                    sizes="64px"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
                   />
                 </div>
               ))}
@@ -399,6 +417,7 @@ export default function ProductDetailPage() {
                   height={600}
                   className="w-full h-auto object-contain rounded-lg"
                   priority
+                  sizes="(max-width: 768px) 100vw, 800px"
                 />
               </div>
             ) : (
