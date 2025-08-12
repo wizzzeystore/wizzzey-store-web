@@ -89,7 +89,7 @@ function HomePageContent() {
 
     setLoadingCategories(true);
     fetchCategories().then(data => {
-      setFeaturedCategories(data.slice(0, 9));
+      setFeaturedCategories(data.slice(0, 12));
     })
       .catch(error => {
         console.error("Failed to fetch featured categories:", error);
@@ -158,6 +158,55 @@ function HomePageContent() {
           </Link>
       </section>
 
+      {/* Categories Section (moved above Featured Products) */}
+      <section>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-3xl font-bold font-headline">Shop by Category</h2>
+        </div>
+        {loadingCategories ? (
+          <div className="relative">
+            <div className="flex items-center space-x-4 overflow-hidden">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="flex flex-col items-center w-24">
+                  <div className="w-24 h-24 rounded-full bg-gray-200 animate-pulse" />
+                  <div className="h-4 w-16 bg-gray-200 rounded mt-2 animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : featuredCategories.length > 0 ? (
+          <div className="relative">
+            <div
+              className="overflow-x-auto scrollbar-hide sm:scrollbar-thin sm:scrollbar-thumb-gray-400 sm:scrollbar-track-gray-100"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            >
+              <div className="flex w-max mx-auto items-center space-x-4 px-1">
+                {featuredCategories.map((category) => (
+                  <Link
+                    href={`/shop?category=${category.id}`}
+                    key={category.id}
+                    className="group flex-shrink-0 flex flex-col items-center w-24"
+                  >
+                    <div className="w-24 h-24 rounded-full overflow-hidden border border-gray-200 shadow-sm group-hover:shadow-md transition-shadow">
+                      <Image
+                        src={category.image?.url || `https://placehold.co/300x300.png`}
+                        alt={category.image?.originalName || category.name}
+                        width={96}
+                        height={96}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span className="mt-2 text-sm text-center truncate w-full">{category.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p>No categories to display.</p>
+        )}
+      </section>
+
       {/* Featured Products Section */}
       <section>
         <div className="flex justify-between items-center mb-8">
@@ -211,39 +260,7 @@ function HomePageContent() {
         )}
       </section>
 
-      {/* Featured Categories Section */}
-      <section>
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold font-headline">Shop by Category</h2>
-        </div>
-        {loadingCategories ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[...Array(3)].map((_, i) => <div key={i} className="bg-card p-4 shadow-md rounded-none h-[200px] flex items-center justify-center"><LoadingSpinner /></div>)}
-          </div>
-        ) : featuredCategories.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredCategories.map(category => (
-              <Link href={`/shop?category=${category.id}`} key={category.id} className="group block">
-                <div className="relative aspect-video overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-none">
-                  <Image
-                    src={category.image?.url ? `${category.image.url}` : `https://placehold.co/400x300.png`}
-                    alt={category.image?.originalName || ""}
-                    layout="fill"
-                    objectFit="cover"
-                    className="group-hover:scale-105 transition-transform duration-500 ease-in-out"
-                    data-ai-hint="fashion category apparel"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center p-4">
-                    <h3 className="text-2xl font-semibold text-white text-center font-headline">{category.name}</h3>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p>No categories to display.</p>
-        )}
-      </section>
+      
 
       {/* New Arrivals / Call to Action */}
       <section className="relative py-16">

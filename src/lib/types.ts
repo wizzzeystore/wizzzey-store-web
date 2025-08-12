@@ -193,7 +193,21 @@ export interface AppSettings {
     size: number;
     url: string;
   };
+  heroImageMobile?: {
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+    url: string;
+  };
   footerImage?: {
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+    url: string;
+  };
+  footerImageMobile?: {
     filename: string;
     originalName: string;
     mimetype: string;
