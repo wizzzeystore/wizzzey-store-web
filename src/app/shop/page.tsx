@@ -46,6 +46,7 @@ type AppliedFiltersForApi = {
   sortOrder?: 'asc' | 'desc';
   product_ids?: string[]; // Array of product IDs to fetch specific products
   brandId?: string;
+  random?: boolean;
 };
 
 function ShopContent() {
@@ -167,6 +168,7 @@ function ShopContent() {
   const loadProducts = useCallback(async (filtersToApply: AppliedFiltersStateFromPanel & { sizes?: Size[], colors?: Color[], brandIds?: string[] }, page: number = 1) => {
     setLoadingProducts(true);
     try {
+      const useRandom = !filtersToApply.sortBy && !filtersToApply.sortOrder && !(filtersToApply.productsIds && filtersToApply.productsIds.length > 0);
       const serviceParams: AppliedFiltersForApi = {
         page: page,
         limit: 9, 
@@ -177,6 +179,7 @@ function ShopContent() {
         sortOrder: filtersToApply.sortOrder,
         product_ids: filtersToApply.productsIds,
         brandId: filtersToApply.brandIds?.[0],
+        random: useRandom,
       };
       
       console.log('Loading products with params:', serviceParams);
