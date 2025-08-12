@@ -25,13 +25,16 @@ const Header = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const searchWrapperRef = useRef<HTMLDivElement>(null);
+  const mobileSearchWrapperRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const navRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (searchOpen && searchWrapperRef.current) {
+    if (searchOpen) {
       // Use setTimeout to ensure focus after render/animation
       setTimeout(() => {
-        searchWrapperRef.current && searchWrapperRef.current.querySelector('input')?.focus();
+        const inputEl = (mobileSearchWrapperRef.current?.querySelector('input') as HTMLInputElement | null)
+          || (searchWrapperRef.current?.querySelector('input') as HTMLInputElement | null);
+        inputEl?.focus();
       }, 50);
     }
   }, [searchOpen]);
@@ -55,10 +58,10 @@ const Header = () => {
   // Close dropdown and search bar on click outside
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (
-        searchWrapperRef.current &&
-        !searchWrapperRef.current.contains(e.target as Node)
-      ) {
+      const targetNode = e.target as Node;
+      const clickedInsideDesktop = !!(searchWrapperRef.current && searchWrapperRef.current.contains(targetNode));
+      const clickedInsideMobile = !!(mobileSearchWrapperRef.current && mobileSearchWrapperRef.current.contains(targetNode));
+      if (!clickedInsideDesktop && !clickedInsideMobile) {
         setShowDropdown(false);
         setSearchOpen(false);
       }
@@ -202,26 +205,84 @@ const Header = () => {
                 </span>
               </Link>
             </div>
-            {/* Hamburger for mobile */}
-            <div className="sm:hidden">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <button className="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Open menu">
-                    <Menu size={24} />
-                  </button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-64 p-0">
-                  <div className="flex flex-col divide-y divide-gray-200">
-                    <SheetClose asChild><Link href="/profile" className="p-4 flex items-center gap-2"><UserIcon size={20} /> Profile</Link></SheetClose>
-                    <SheetClose asChild><Link href="/wishlist" className="p-4 flex items-center gap-2"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg> Wishlist</Link></SheetClose>
-                    <SheetClose asChild><Link href="/cart" className="p-4 flex items-center gap-2"><ShoppingCart size={20} /> Cart</Link></SheetClose>
-                    <SheetClose asChild><Link href="/orders" className="p-4 flex items-center gap-2"><Shirt size={20} /> Orders</Link></SheetClose>
-                    <SheetClose asChild><Link href="/shop" className="p-4 flex items-center gap-2"><Search size={20} /> Shop</Link></SheetClose>
-                    <SheetClose asChild><Link href="/" className="p-4 flex items-center gap-2"><span>Home</span></Link></SheetClose>
-                    <SheetClose asChild><button onClick={logout} className="p-4 flex items-center gap-2 text-left w-full"><LogOut size={20} /> Logout</button></SheetClose>
+            {/* Mobile: Search + Hamburger */}
+            <div className="sm:hidden flex items-center gap-2">
+              {/* Mobile search trigger/dropdown */}
+              <div className="relative" ref={mobileSearchWrapperRef}>
+                <button
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  onClick={() => setSearchOpen((v) => !v)}
+                  aria-label="Search"
+                  type="button"
+                >
+                  <Search size={22} />
+                </button>
+                <div
+                  className={`absolute right-0 top-12 w-72 z-30 transition-all duration-300 ${searchOpen ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible'}`}
+                >
+                  <div className="bg-white border rounded-lg shadow-lg p-3 flex items-center">
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 outline-none text-sm"
+                      placeholder="Search products..."
+                      value={searchValue}
+                      onChange={e => setSearchValue(e.target.value)}
+                      onFocus={() => setShowDropdown(searchResults.length > 0)}
+                    />
+                    {searchLoading && <span className="ml-2 animate-spin"><Search size={18} /></span>}
                   </div>
-                </SheetContent>
-              </Sheet>
+                  {showDropdown && searchResults.length > 0 && (
+                    <div className="bg-white border-x border-b rounded-b-lg shadow-lg max-h-80 overflow-y-auto">
+                      {searchResults.map(product => (
+                        <div
+                          key={product.id}
+                          className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                          onClick={() => {
+                            setSearchOpen(false);
+                            setShowDropdown(false);
+                            setSearchValue('');
+                            router.push(`/shop/product/${product.id}`);
+                          }}
+                        >
+                          <Image
+                            src={product.images?.[0] || '/wizzzey_logo.png'}
+                            alt={product.name}
+                            width={40}
+                            height={40}
+                            className="object-cover rounded"
+                          />
+                          <span className="truncate flex-1">{product.name}</span>
+                        </div>
+                      ))}
+                      {searchResults.length === 8 && (
+                        <div className="px-3 py-2 text-xs text-gray-500">More results available, refine your search...</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Hamburger */}
+              <div>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <button className="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Open menu">
+                      <Menu size={24} />
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-64 p-0">
+                    <div className="flex flex-col divide-y divide-gray-200">
+                      <SheetClose asChild><Link href="/profile" className="p-4 flex items-center gap-2"><UserIcon size={20} /> Profile</Link></SheetClose>
+                      <SheetClose asChild><Link href="/wishlist" className="p-4 flex items-center gap-2"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg> Wishlist</Link></SheetClose>
+                      <SheetClose asChild><Link href="/cart" className="p-4 flex items-center gap-2"><ShoppingCart size={20} /> Cart</Link></SheetClose>
+                      <SheetClose asChild><Link href="/orders" className="p-4 flex items-center gap-2"><Shirt size={20} /> Orders</Link></SheetClose>
+                      <SheetClose asChild><Link href="/shop" className="p-4 flex items-center gap-2"><Search size={20} /> Shop</Link></SheetClose>
+                      <SheetClose asChild><Link href="/" className="p-4 flex items-center gap-2"><span>Home</span></Link></SheetClose>
+                      <SheetClose asChild><button onClick={logout} className="p-4 flex items-center gap-2 text-left w-full"><LogOut size={20} /> Logout</button></SheetClose>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </div>
           </div>
         </div>
