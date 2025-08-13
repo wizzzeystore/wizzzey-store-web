@@ -27,6 +27,7 @@ function HomePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { appSettings, loading: loadingSettings } = useAppSettings();
+  const asUrl = (u?: string) => u ? (u.startsWith('http') ? u : (u.startsWith('/uploads/') ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${u}` : u)) : '';
 
   // Check for products_ids parameter and redirect to shop page
   useEffect(() => {
@@ -116,22 +117,22 @@ function HomePageContent() {
             <picture>
               {appSettings?.heroImageMobile?.url && (
                 <source
-                  srcSet={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.heroImageMobile.url}`}
+                  srcSet={asUrl(appSettings.heroImageMobile.url)}
                   media="(max-width: 767px)"
                 />
               )}
               {appSettings?.heroImage?.url && (
                 <source
-                  srcSet={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.heroImage.url}`}
+                  srcSet={asUrl(appSettings.heroImage.url)}
                   media="(min-width: 768px)"
                 />
               )}
               <img
                 src={
                   appSettings?.heroImageMobile?.url
-                    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.heroImageMobile.url}`
+                    ? asUrl(appSettings.heroImageMobile.url)
                     : appSettings?.heroImage?.url
-                    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.heroImage.url}`
+                    ? asUrl(appSettings.heroImage.url)
                     : "/hero.jpg"
                 }
                 alt={
@@ -277,22 +278,22 @@ function HomePageContent() {
             <picture>
               {appSettings?.footerImageMobile?.url && (
                 <source
-                  srcSet={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.footerImageMobile.url}`}
+                  srcSet={asUrl(appSettings.footerImageMobile.url)}
                   media="(max-width: 767px)"
                 />
               )}
               {appSettings?.footerImage?.url && (
                 <source
-                  srcSet={`${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.footerImage.url}`}
+                  srcSet={asUrl(appSettings.footerImage.url)}
                   media="(min-width: 768px)"
                 />
               )}
               <img
                 src={
                   appSettings?.footerImageMobile?.url
-                    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.footerImageMobile.url}`
+                    ? asUrl(appSettings.footerImageMobile.url)
                     : appSettings?.footerImage?.url
-                    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${appSettings.footerImage.url}`
+                    ? asUrl(appSettings.footerImage.url)
                     : "/hero.jpg"
                 }
                 alt={
