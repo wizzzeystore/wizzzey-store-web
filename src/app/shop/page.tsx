@@ -168,7 +168,8 @@ function ShopContent() {
   const loadProducts = useCallback(async (filtersToApply: AppliedFiltersStateFromPanel & { sizes?: Size[], colors?: Color[], brandIds?: string[] }, page: number = 1) => {
     setLoadingProducts(true);
     try {
-      // Only use random when there are absolutely no filters applied
+      // Use random only on first page and only when absolutely no filters/sorting are applied
+      const isFirstPage = page === 1;
       const noSorting = !filtersToApply.sortBy && !filtersToApply.sortOrder;
       const noSpecificProducts = !(filtersToApply.productsIds && filtersToApply.productsIds.length > 0);
       const noCategory = !(filtersToApply.categoryIds && filtersToApply.categoryIds.length > 0);
@@ -176,7 +177,8 @@ function ShopContent() {
       const noSizes = !(filtersToApply.sizes && filtersToApply.sizes.length > 0);
       const noColors = !(filtersToApply.colors && filtersToApply.colors.length > 0);
       const noBrands = !(filtersToApply.brandIds && filtersToApply.brandIds.length > 0);
-      const useRandom = noSorting && noSpecificProducts && noCategory && noPrice && noSizes && noColors && noBrands;
+      const useRandom = isFirstPage && noSorting && noSpecificProducts && noCategory && noPrice && noSizes && noColors && noBrands;
+
       const serviceParams: AppliedFiltersForApi = {
         page: page,
         limit: 9, 
@@ -193,9 +195,27 @@ function ShopContent() {
       console.log('Loading products with params:', serviceParams);
       console.log('Product IDs being sent:', serviceParams.product_ids);
       
-      const response = await fetchProducts(serviceParams);
+      // If using random on first page, fetch random items for display
+      // and also fetch the normal page-1 to get real pagination/meta.
+      let response: PaginatedResponse<Product>;
+      if (useRandom) {
+        const [randomRes, metaRes] = await Promise.all([
+          fetchProducts({ ...serviceParams, random: true }),
+          fetchProducts({ ...serviceParams, random: false, page: 1 }),
+        ]);
+        response = {
+          type: metaRes.type,
+          message: metaRes.message,
+          data: { items: randomRes.data.items },
+          pagination: metaRes.pagination,
+          filters: metaRes.filters,
+          sort: metaRes.sort,
+        };
+      } else {
+        response = await fetchProducts(serviceParams);
+      }
       console.log('API response:', response);
-      
+
       setProductsResponse(response);
       if(response.filters?.available?.minPrice !== undefined && response.filters?.available?.maxPrice !== undefined){
         setApiPriceRange({min: response.filters.available.minPrice, max: response.filters.available.maxPrice});
