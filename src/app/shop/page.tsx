@@ -168,7 +168,15 @@ function ShopContent() {
   const loadProducts = useCallback(async (filtersToApply: AppliedFiltersStateFromPanel & { sizes?: Size[], colors?: Color[], brandIds?: string[] }, page: number = 1) => {
     setLoadingProducts(true);
     try {
-      const useRandom = !filtersToApply.sortBy && !filtersToApply.sortOrder && !(filtersToApply.productsIds && filtersToApply.productsIds.length > 0);
+      // Only use random when there are absolutely no filters applied
+      const noSorting = !filtersToApply.sortBy && !filtersToApply.sortOrder;
+      const noSpecificProducts = !(filtersToApply.productsIds && filtersToApply.productsIds.length > 0);
+      const noCategory = !(filtersToApply.categoryIds && filtersToApply.categoryIds.length > 0);
+      const noPrice = !(filtersToApply.priceRange && (typeof filtersToApply.priceRange[0] === 'number' || typeof filtersToApply.priceRange[1] === 'number'));
+      const noSizes = !(filtersToApply.sizes && filtersToApply.sizes.length > 0);
+      const noColors = !(filtersToApply.colors && filtersToApply.colors.length > 0);
+      const noBrands = !(filtersToApply.brandIds && filtersToApply.brandIds.length > 0);
+      const useRandom = noSorting && noSpecificProducts && noCategory && noPrice && noSizes && noColors && noBrands;
       const serviceParams: AppliedFiltersForApi = {
         page: page,
         limit: 9, 
