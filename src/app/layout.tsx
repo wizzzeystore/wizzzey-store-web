@@ -9,6 +9,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Script from 'next/script';
 import GoogleAnalytics from '../components/GoogleAnalytics';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Wizzzey Store - Your Fashion Destination',
@@ -58,7 +59,11 @@ export default function RootLayout({
                 <Footer />
               </MaintenanceWrapper>
               <Toaster />
-              {GA_MEASUREMENT_ID ? <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} /> : null}
+              {GA_MEASUREMENT_ID ? (
+                <Suspense fallback={null}>
+                  <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} />
+                </Suspense>
+              ) : null}
             </AppSettingsProvider>
           </CartProvider>
         </AuthProvider>
