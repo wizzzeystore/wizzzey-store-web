@@ -11,6 +11,29 @@ export interface User {
   updatedAt?: string;
 }
 
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  color: { name: string; code: string };
+  size: string;
+  sku: string;
+  price: number;
+  compareAtPrice?: number;
+  costPrice?: number;
+  stock: number;
+  lowStockThreshold?: number;
+  images?: { url: string; type: 'image' | 'video'; alt?: string }[];
+  barcode?: string;
+  weight?: { value: number; unit: string };
+  dimensions?: { length: number; width: number; height: number; unit: string };
+  status: 'active' | 'inactive' | 'out_of_stock';
+  isDefault: boolean;
+  discountPercentage?: number;
+  inStock: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -42,6 +65,10 @@ export interface Product {
   slug?: string;
   sku?: string;
   sizeChart?: string | { _id: string; title: string; image: string };
+  // New variant support fields
+  hasVariants?: boolean;
+  defaultVariantId?: string;
+  variants?: ProductVariant[];
 }
 
 export interface Category {

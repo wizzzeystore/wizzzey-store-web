@@ -1,11 +1,11 @@
 "use client";
 
-import type { Product, CartItem } from '@/lib/types';
+import type { Product, CartItem, ProductVariant } from '@/lib/types';
 import React, { createContext, useContext, useState, type ReactNode, useEffect } from 'react';
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, quantity?: number, selectedSize?: string, selectedColor?: string) => void;
+  addToCart: (product: Product, quantity?: number, selectedSize?: string, selectedColor?: string, variant?: ProductVariant) => void;
   removeFromCart: (productId: string, selectedSize?: string, selectedColor?: string) => void;
   updateQuantity: (productId: string, quantity: number, selectedSize?: string, selectedColor?: string) => void;
   clearCart: () => void;
@@ -47,7 +47,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [cartItems, hasMounted]);
 
-  const addToCart = (product: Product, quantity: number = 1, selectedSize?: string, selectedColor?: string) => {
+  const addToCart = (product: Product, quantity: number = 1, selectedSize?: string, selectedColor?: string, variant?: ProductVariant) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item =>
         item.id === product.id &&
@@ -63,12 +63,26 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             : item
         );
       }
-      const newCartItem: CartItem = {
+      
+      // Use variant data if available, otherwise use product data
+      const cartItemData = variant ? {
+        ...product,
+        price: variant.price,
+        compareAtPrice: variant.compareAtPrice,
+        stock: variant.stock,
+        inStock: variant.inStock,
+        images: variant.images ? variant.images.map(img => img.url) : product.images,
+        quantity: Math.max(1, quantity),
+        selectedSize,
+        selectedColor,
+      } : {
         ...product,
         quantity: Math.max(1, quantity),
         selectedSize,
         selectedColor,
       };
+      
+      const newCartItem: CartItem = cartItemData;
       return [...prevItems, newCartItem];
     });
   };

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import type { Product } from '@/lib/types';
+import type { Product, ProductVariant } from '@/lib/types';
 import { fetchProductById, fetchProducts, fetchBrands, fetchSizeChartById } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,7 @@ export default function ProductDetailPage() {
   const { id } = params;
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [randomCategoryProducts, setRandomCategoryProducts] = useState<Product[]>([]);
   const [brandName, setBrandName] = useState<string | null>(null);
@@ -32,6 +33,7 @@ export default function ProductDetailPage() {
   const [sizeChartModalOpen, setSizeChartModalOpen] = useState(false);
   const [sizeChartImageUrl, setSizeChartImageUrl] = useState<string | null>(null);
   const [sizeChartLoading, setSizeChartLoading] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
   const { addToCart } = useCart();
 
@@ -42,11 +44,25 @@ export default function ProductDetailPage() {
         .then(async data => {
           if (data) {
             setProduct(data);
-            if (data.availableSizes && data.availableSizes.length > 0) {
-              setSelectedSize(data.availableSizes[0]);
-            }
-            if (data.colors && data.colors.length > 0) {
-              setSelectedColor(data.colors[0].name);
+            
+            // Handle variants if product has them
+            if (data.hasVariants && data.variants) {
+              setVariants(data.variants);
+              // Set default variant
+              const defaultVariant = data.variants.find((v: ProductVariant) => v.isDefault);
+              if (defaultVariant) {
+                setSelectedVariant(defaultVariant);
+                setSelectedSize(defaultVariant.size);
+                setSelectedColor(defaultVariant.color.name);
+              }
+            } else {
+              // Legacy product without variants
+              if (data.availableSizes && data.availableSizes.length > 0) {
+                setSelectedSize(data.availableSizes[0]);
+              }
+              if (data.colors && data.colors.length > 0) {
+                setSelectedColor(data.colors[0].name);
+              }
             }
             if (data.brandId) {
               try {
@@ -91,7 +107,13 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (product) {
-      addToCart(product, quantity, selectedSize, selectedColor);
+      if (selectedVariant) {
+        // Add variant to cart
+        addToCart(product, quantity, selectedVariant.size, selectedVariant.color.name, selectedVariant);
+      } else {
+        // Legacy product without variants
+        addToCart(product, quantity, selectedSize, selectedColor);
+      }
       toast({
         title: "Added to cart!",
         description: `${product.name} (x${quantity}) has been added to your cart.`,
@@ -142,14 +164,35 @@ export default function ProductDetailPage() {
   }
   
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const allImages = product.images && product.images.length > 0 ? product.images : ["https://placehold.co/600x800.png"];
-  const mainImage = allImages[selectedImageIndex] || allImages[0];
-  console.log('Log: img mainImage: ', mainImage);
-  console.log('Log: img allImages: ', allImages);
-  const thumbnailImages = allImages.length > 1 ? allImages : [];
-  const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
+  
+  // Handle images based on whether product has variants
+  let allImages: string[] = [];
+  let mainImage: string = "";
+  let thumbnailImages: string[] = [];
+  
+  if (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) {
+    // Use variant images
+    allImages = selectedVariant.images.map(img => img.url);
+    mainImage = allImages[selectedImageIndex] || allImages[0];
+    thumbnailImages = allImages.length > 1 ? allImages : [];
+  } else if (product.images && product.images.length > 0) {
+    // Use product images (legacy)
+    allImages = product.images;
+    mainImage = allImages[selectedImageIndex] || allImages[0];
+    thumbnailImages = allImages.length > 1 ? allImages : [];
+  } else {
+    // Fallback
+    allImages = ["https://placehold.co/600x800.png"];
+    mainImage = allImages[0];
+    thumbnailImages = [];
+  }
+  
+  // Handle pricing based on selected variant
+  const currentPrice = selectedVariant ? selectedVariant.price : product.price;
+  const currentCompareAtPrice = selectedVariant ? selectedVariant.compareAtPrice : product.compareAtPrice;
+  const hasDiscount = currentCompareAtPrice && currentCompareAtPrice > currentPrice;
   const discount = hasDiscount
-    ? product.discountPercentage || Math.round(100 - (product.price / (product.compareAtPrice || product.price)) * 100)
+    ? selectedVariant?.discountPercentage || Math.round(100 - (currentPrice / (currentCompareAtPrice || currentPrice)) * 100)
     : 0;
   const ratings = product.ratings || { average: 0, count: 0 };
 
@@ -245,18 +288,40 @@ export default function ProductDetailPage() {
           <div className="flex items-center gap-2 mb-4">
             {hasDiscount && (
               <>
-                <span className="text-2xl font-semibold text-primary">₹{product.price.toFixed(2)}</span>
-                <span className="text-lg line-through text-muted-foreground">₹{product.compareAtPrice?.toFixed(2)}</span>
+                <span className="text-2xl font-semibold text-primary">₹{currentPrice.toFixed(2)}</span>
+                <span className="text-lg line-through text-muted-foreground">₹{currentCompareAtPrice?.toFixed(2)}</span>
                 <span className="text-sm text-green-600 font-semibold">{discount}% OFF</span>
               </>
             )}
             {!hasDiscount && (
-              <span className="text-2xl font-semibold text-primary">₹{product.price.toFixed(2)}</span>
+              <span className="text-2xl font-semibold text-primary">₹{currentPrice.toFixed(2)}</span>
             )}
           </div>
 
           {/* Size Selection */}
-          {product.availableSizes && product.availableSizes.length > 0 && (
+          {variants.length > 0 ? (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-foreground mb-2">Size:</label>
+              <div className="flex gap-2">
+                {variants
+                  .filter(variant => variant.color.name === selectedColor)
+                  .map(variant => (
+                    <Button 
+                      key={variant.size} 
+                      variant={selectedSize === variant.size ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedSize(variant.size);
+                        setSelectedVariant(variant);
+                        setSelectedImageIndex(0); // Reset image index when changing variant
+                      }}
+                    >
+                      {variant.size}
+                    </Button>
+                  ))}
+              </div>
+            </div>
+          ) : product.availableSizes && product.availableSizes.length > 0 && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-foreground mb-2">Size:</label>
               <div className="flex gap-2">
@@ -291,7 +356,30 @@ export default function ProductDetailPage() {
           )}
 
           {/* Color Selection */}
-          {product.colors && product.colors.length > 0 && (
+          {variants.length > 0 ? (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-foreground mb-2">Color:</label>
+              <div className="flex gap-2">
+                {variants.map(variant => (
+                  <Button 
+                    key={variant.color.name} 
+                    variant={selectedColor === variant.color.name ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      setSelectedColor(variant.color.name);
+                      setSelectedVariant(variant);
+                      setSelectedSize(variant.size);
+                      setSelectedImageIndex(0); // Reset image index when changing variant
+                    }}
+                    className="p-0 w-8 h-8 rounded-full border-2 flex items-center justify-center"
+                    style={{ borderColor: selectedColor === variant.color.name ? 'hsl(var(--primary))' : 'hsl(var(--border))' }}
+                  >
+                    <span className="block w-6 h-6 rounded-full" style={{ backgroundColor: variant.color.code }}></span>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ) : product.colors && product.colors.length > 0 && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-foreground mb-2">Color:</label>
               <div className="flex gap-2">
@@ -325,7 +413,8 @@ export default function ProductDetailPage() {
             </div>
 
 
-            {(product.stock || 0) === 0 || product.status === 'out_of_stock' ? (
+            {(selectedVariant ? selectedVariant.stock : (product.stock || 0)) === 0 || 
+             (selectedVariant ? selectedVariant.status : product.status) === 'out_of_stock' ? (
               <Button size="lg" disabled className="w-full md:w-auto">
                 Out of Stock
               </Button>
@@ -336,7 +425,7 @@ export default function ProductDetailPage() {
             )}
           </div>
 
-          {(product.stock || 0) > 0 && (
+          {(selectedVariant ? selectedVariant.stock : (product.stock || 0)) > 0 && (
             <div className="flex items-center text-green-600 mb-4">
               <CheckCircle size={16} className="mr-2"/>
               <span className="text-sm">In Stock - Ships in 4-5 business days</span>
