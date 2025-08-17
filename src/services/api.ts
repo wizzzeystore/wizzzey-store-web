@@ -395,7 +395,7 @@ const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
 
   if (apiProduct.media && apiProduct.media.length > 0) {
     images = apiProduct.media
-      .map((m) => `${baseUrl}${m.url || ""}`)
+      .map((m) => `${baseUrl}/${m.url || ""}`)
       .filter((u) => !!u && u !== baseUrl);
   }
 
@@ -419,7 +419,7 @@ const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
     categoryName: apiProduct.categoryName,
     images: images,
     // Always render images by prefixing with the API base URL
-    imageUrl: apiProduct.imageUrl ? `${baseUrl}${apiProduct.imageUrl}` : undefined,
+    imageUrl: apiProduct.imageUrl ? `${baseUrl}/${apiProduct.imageUrl}` : undefined,
     media: apiProduct.media,
     inStock: apiProduct.stock > 0,
     stock: apiProduct.stock,
