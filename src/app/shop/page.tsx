@@ -179,18 +179,32 @@ function ShopContent() {
       const noBrands = !(filtersToApply.brandIds && filtersToApply.brandIds.length > 0);
       const useRandom = isFirstPage && noSorting && noSpecificProducts && noCategory && noPrice && noSizes && noColors && noBrands;
 
-      const serviceParams: AppliedFiltersForApi = {
+      const serviceParams: AppliedFiltersForApi & { size?: string; color?: string } = {
         page: page,
         limit: 9, 
-        categoryId: filtersToApply.categoryIds?.[0],
+        // If multiple categories selected, send as JSON array string so backend can treat as $in
+        categoryId: (filtersToApply.categoryIds && filtersToApply.categoryIds.length > 1)
+          ? JSON.stringify(filtersToApply.categoryIds)
+          : filtersToApply.categoryIds?.[0],
         minPrice: filtersToApply.priceRange?.[0],
         maxPrice: filtersToApply.priceRange?.[1],
         sortBy: filtersToApply.sortBy,
         sortOrder: filtersToApply.sortOrder,
         product_ids: filtersToApply.productsIds,
-        brandId: filtersToApply.brandIds?.[0],
+        // If multiple brands selected, send as JSON array string
+        brandId: (filtersToApply.brandIds && filtersToApply.brandIds.length > 1)
+          ? JSON.stringify(filtersToApply.brandIds)
+          : filtersToApply.brandIds?.[0],
         random: useRandom,
       };
+
+      // Pass sizes and colors as comma-separated lists if present
+      if (filtersToApply.sizes && filtersToApply.sizes.length > 0) {
+        (serviceParams as any).size = filtersToApply.sizes.join(',');
+      }
+      if (filtersToApply.colors && filtersToApply.colors.length > 0) {
+        (serviceParams as any).color = filtersToApply.colors.join(',');
+      }
       
       console.log('Loading products with params:', serviceParams);
       console.log('Product IDs being sent:', serviceParams.product_ids);

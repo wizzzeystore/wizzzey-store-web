@@ -139,14 +139,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
     setSelectedBrands(prev => prev.includes(brandId) ? prev.filter(id => id !== brandId) : [...prev, brandId]);
   };
   
-  const applyFilters = () => {
+  // Emit changes immediately when any filter is changed
+  useEffect(() => {
     const trackMinBound = availableFilters?.priceRange?.min ?? absoluteMinPrice;
     const trackMaxBound = availableFilters?.priceRange?.max ?? absoluteMaxPrice;
-    
-    // Only send priceRange to URL if it's different from the full track bounds
-    const priceRangeToSend = (minPrice === trackMinBound && maxPrice === trackMaxBound) 
-        ? undefined 
-        : [minPrice, maxPrice] as [number, number];
+
+    const priceRangeToSend = (minPrice === trackMinBound && maxPrice === trackMaxBound)
+      ? undefined
+      : [minPrice, maxPrice] as [number, number];
 
     onFilterChange({
       priceRange: priceRangeToSend,
@@ -157,7 +157,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
       colors: selectedColors.length > 0 ? selectedColors : undefined,
       brandIds: selectedBrands.length > 0 ? selectedBrands : undefined,
     });
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minPrice, maxPrice, selectedCategories, sortBy, sortOrder, selectedSizes, selectedColors, selectedBrands]);
 
   const resetFilters = () => {
     const trackMinBound = availableFilters?.priceRange?.min ?? absoluteMinPrice;
@@ -343,7 +344,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
         </AccordionItem>
       </Accordion>
 
-      <Button onClick={applyFilters} className="w-full mt-6">Apply Filters</Button>
+      {/* Apply button removed; filters apply in real time */}
     </div>
   );
 };

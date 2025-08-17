@@ -394,7 +394,16 @@ const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
   const baseUrl = API_BASE_URL || "";
 
   if (apiProduct.media && apiProduct.media.length > 0) {
-    images = apiProduct.media.map((m) => `${baseUrl}/${m.url}`);
+    images = apiProduct.media.map((m) => {
+      const url = m.url || "";
+      if (url.startsWith("http")) {
+        return url;
+      }
+      if (url.startsWith("/uploads/")) {
+        return `${baseUrl}${url}`;
+      }
+      return url;
+    });
   }
 
   if (images.length === 0) {
@@ -448,13 +457,12 @@ const mapApiOrderToOrder = (apiOrder: ApiOrder): Order => {
     items: apiOrder.items.map((item) => {
       let productImage =
         item.productImage || "https://placehold.co/100x100.png";
-      if (
-        productImage &&
-        !(productImage.startsWith("http") || productImage.startsWith("data:"))
-      ) {
-        productImage = `${baseUrl}${
-          productImage.startsWith("/") ? productImage : "/" + productImage
-        }`;
+      if (productImage) {
+        if (productImage.startsWith("http")) {
+          // keep
+        } else if (productImage.startsWith("/uploads/")) {
+          productImage = `${baseUrl}${productImage}`;
+        }
       }
       return {
         ...item,
@@ -474,7 +482,8 @@ const mapApiOrderToOrder = (apiOrder: ApiOrder): Order => {
 export interface FetchProductsParams {
   page?: number;
   limit?: number;
-  categoryId?: string; // API expects single categoryId
+  // Can be a single id or a JSON array string of ids for multi-category
+  categoryId?: string;
   minPrice?: number;
   maxPrice?: number;
   sortBy?: string;
@@ -485,6 +494,10 @@ export interface FetchProductsParams {
   isFeatured?: boolean;
   random?: boolean; // For fetching random products
   term?: string;
+  // Extended filters supported by backend
+  size?: string; // comma-separated sizes
+  color?: string; // comma-separated colors
+  brandId?: string; // single id or JSON array string of ids for multi-brand
 }
 
 export async function fetchProducts(
@@ -648,13 +661,12 @@ export async function fetchCategories(): Promise<Category[]> {
   return response.data.categories.map((apiCategory) => {
     const baseUrl = API_BASE_URL || "";
     let imageUrl = apiCategory.image?.url;
-    if (
-      imageUrl &&
-      !(imageUrl.startsWith("http") || imageUrl.startsWith("data:"))
-    ) {
-      imageUrl = `${baseUrl}${
-        imageUrl.startsWith("/") ? imageUrl : "/" + imageUrl
-      }`;
+    if (imageUrl) {
+      if (imageUrl.startsWith("http")) {
+        // keep as-is
+      } else if (imageUrl.startsWith("/uploads/")) {
+        imageUrl = `${baseUrl}${imageUrl}`;
+      }
     }
     if (!imageUrl) {
       imageUrl = `https://placehold.co/300x200.png?text=${encodeURIComponent(
