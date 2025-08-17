@@ -392,11 +392,23 @@ Original error: ${error.message}`;
 const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
   let images: string[] = [];
   const baseUrl = API_BASE_URL || "";
+  const isDev = process.env.NODE_ENV !== 'production';
+
+  const resolveUrl = (url?: string) => {
+    if (!url || url.trim() === "") return "";
+    const u = url.trim();
+    // In development, if API sent a full URL (e.g., placehold.co), do not prefix
+    if (isDev && (u.startsWith("http://") || u.startsWith("https://"))) {
+      return u;
+    }
+    if (u.startsWith("/")) return `${baseUrl}${u}`;
+    return `${baseUrl}/${u}`;
+  };
 
   if (apiProduct.media && apiProduct.media.length > 0) {
     images = apiProduct.media
-      .map((m) => `${baseUrl}/${m.url || ""}`)
-      .filter((u) => !!u && u !== baseUrl);
+      .map((m) => resolveUrl(m.url))
+      .filter((u) => !!u);
   }
 
   if (images.length === 0) {
@@ -418,8 +430,8 @@ const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
     categoryId: apiProduct.categoryId,
     categoryName: apiProduct.categoryName,
     images: images,
-    // Always render images by prefixing with the API base URL
-    imageUrl: apiProduct.imageUrl ? `${baseUrl}/${apiProduct.imageUrl}` : undefined,
+    // In dev, keep absolute URLs as-is; otherwise, prefix relative paths with base URL
+    imageUrl: resolveUrl(apiProduct.imageUrl) || undefined,
     media: apiProduct.media,
     inStock: apiProduct.stock > 0,
     stock: apiProduct.stock,
@@ -651,21 +663,22 @@ export async function fetchCategories(): Promise<Category[]> {
     );
   }
 
+  const baseUrl = API_BASE_URL || "";
+  const isDev = process.env.NODE_ENV !== 'production';
+  const resolveUrl = (url?: string) => {
+    if (!url || url.trim() === "") return "";
+    const u = url.trim();
+    if (isDev && (u.startsWith("http://") || u.startsWith("https://"))) {
+      return u;
+    }
+    if (u.startsWith("/")) return `${baseUrl}${u}`;
+    return `${baseUrl}/${u}`;
+  };
+
   return response.data.categories.map((apiCategory) => {
-    const baseUrl = API_BASE_URL || "";
-    let imageUrl = apiCategory.image?.url;
-    if (imageUrl) {
-      if (imageUrl.startsWith("http")) {
-        // keep as-is
-      } else if (imageUrl.startsWith("/uploads/")) {
-        imageUrl = `${baseUrl}${imageUrl}`;
-      }
-    }
-    if (!imageUrl) {
-      imageUrl = `https://placehold.co/300x200.png?text=${encodeURIComponent(
-        apiCategory.name
-      )}`;
-    }
+    const imageUrl = resolveUrl(apiCategory.image?.url) || `https://placehold.co/300x200.png?text=${encodeURIComponent(
+      apiCategory.name
+    )}`;
     return {
       id: apiCategory.id || apiCategory._id,
       name: apiCategory.name,

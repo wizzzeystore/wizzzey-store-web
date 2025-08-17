@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useEffect, useState, useCallback, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Product, PaginatedResponse, Category, AvailableFilters, AppliedFilters, Size, Color, Brand } from '@/lib/types';
 import { fetchProducts, fetchCategories, fetchBrands } from '@/services/api'; 
@@ -9,15 +9,7 @@ import FilterPanel from '@/components/FilterPanel';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { LayoutGrid, List, Filter } from 'lucide-react';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+// Removed numbered pagination; implementing infinite scroll instead
 import { useToast } from '@/hooks/use-toast';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
@@ -72,6 +64,12 @@ function ShopContent() {
 
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loadingBrands, setLoadingBrands] = useState(true);
+
+  // Infinite scroll state
+  const [items, setItems] = useState<Product[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [hasNextPage, setHasNextPage] = useState<boolean>(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const parseFiltersFromUrl = useCallback((): AppliedFiltersStateFromPanel & { sizes?: Size[], colors?: Color[], brandIds?: string[] } => {
     const sortBy = searchParams.get('sortBy') || undefined;
@@ -230,7 +228,15 @@ function ShopContent() {
       }
       console.log('API response:', response);
 
+      // Update response and infinite list state
       setProductsResponse(response);
+      setHasNextPage(!!response.pagination?.hasNextPage);
+      if (page === 1) {
+        setItems(response.data.items);
+      } else {
+        setItems(prev => [...prev, ...response.data.items]);
+      }
+      setCurrentPage(page);
       if(response.filters?.available?.minPrice !== undefined && response.filters?.available?.maxPrice !== undefined){
         setApiPriceRange({min: response.filters.available.minPrice, max: response.filters.available.maxPrice});
       }
@@ -238,6 +244,7 @@ function ShopContent() {
       console.error("Failed to fetch products:", error);
       toast({ title: "Error Loading Products", description: error.message || "Could not fetch products.", variant: "destructive"});
       setProductsResponse(null); 
+      if (page === 1) setItems([]);
     } finally {
       setLoadingProducts(false);
     }
@@ -245,7 +252,7 @@ function ShopContent() {
 
   useEffect(() => {
     const filtersFromUrl = parseFiltersFromUrl();
-    const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
+    const pageFromUrl = 1; // always start from page 1 for infinite scroll
     setCurrentFiltersForPanel(filtersFromUrl); 
     
     // Load products only when categories are also loaded or if category loading fails
@@ -282,10 +289,24 @@ function ShopContent() {
       queryParams.set('brandIds', JSON.stringify(newFiltersFromPanel.brandIds));
     }
     
-    queryParams.set('page', '1'); 
-
+    // No explicit page in URL; infinite scroll always starts from page 1 on changes
     router.push(`${pathname}?${queryParams.toString()}`);
   };
+
+  // Set up IntersectionObserver sentinel for infinite scroll
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target) return;
+    const observer = new IntersectionObserver((entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && hasNextPage && !loadingProducts) {
+        loadProducts(currentFiltersForPanel, currentPage + 1);
+      }
+    }, { root: null, rootMargin: '200px', threshold: 0 });
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasNextPage, loadingProducts, currentFiltersForPanel, currentPage, loadProducts]);
 
   const handlePageChange = (newPage: number) => {
     const queryParams = new URLSearchParams(searchParams.toString());
@@ -337,12 +358,14 @@ function ShopContent() {
       {/* Desktop sidebar */}
       {!isViewingSpecificProducts && (
         <aside className="hidden md:block w-full md:w-1/4 lg:w-1/5">
-          <FilterPanel 
-            availableFilters={constructedAvailableFilters} 
-            loadingFilters={loadingCategories} 
-            onFilterChange={handleFilterChange}
-            initialFilters={currentFiltersForPanel} 
-          />
+          <div className="sticky top-24 max-h-[calc(100vh-6rem)] overflow-y-auto">
+            <FilterPanel 
+              availableFilters={constructedAvailableFilters} 
+              loadingFilters={loadingCategories} 
+              onFilterChange={handleFilterChange}
+              initialFilters={currentFiltersForPanel} 
+            />
+          </div>
         </aside>
       )}
       <main className={`w-full ${!isViewingSpecificProducts ? 'md:w-3/4 lg:w-4/5' : ''}`}>
@@ -353,10 +376,10 @@ function ShopContent() {
           <div className="flex items-center gap-2">
              <span className="text-sm text-muted-foreground">
                 {isViewingSpecificProducts ? 
-                  `${productsResponse?.data.items.length || 0} selected products` :
-                  (productsResponse?.pagination && productsResponse.pagination.total > 0 ? 
-                    `Showing ${((productsResponse.pagination.page - 1) * productsResponse.pagination.limit) + 1}-${Math.min(productsResponse.pagination.page * productsResponse.pagination.limit, productsResponse.pagination.total)} of ${productsResponse.pagination.total} products` 
-                    : productsResponse?.pagination?.total === 0 ? '0 products found' : '')
+                  `${items.length} selected products` :
+                  (productsResponse?.pagination && typeof productsResponse.pagination.total === 'number' ? 
+                    `Showing ${items.length} of ${productsResponse.pagination.total} products` 
+                    : items.length > 0 ? `Showing ${items.length} products` : '')
                 }
              </span>
             <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" onClick={() => setViewMode('grid')} aria-label="Grid view">
@@ -368,60 +391,23 @@ function ShopContent() {
           </div>
         </div>
 
-        {isLoading ? (
+        {isLoading && items.length === 0 ? (
           <div className="flex justify-center items-center h-96">
             <LoadingSpinner size={48} />
           </div>
-        ) : productsResponse && productsResponse.data.items.length > 0 ? (
+        ) : items.length > 0 ? (
           <>
             <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-5' : 'grid-cols-1'}`}>
-              {productsResponse.data.items.map(product => (
+              {items.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
-            {!isViewingSpecificProducts && productsResponse.pagination && productsResponse.pagination.totalPages > 1 && (
-              <Pagination className="mt-12">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious 
-                      href="#" 
-                      onClick={(e) => { e.preventDefault(); if(productsResponse.pagination!.hasPrevPage) handlePageChange(productsResponse.pagination!.page - 1)}}
-                      aria-disabled={!productsResponse.pagination.hasPrevPage}
-                      className={!productsResponse.pagination.hasPrevPage ? "pointer-events-none opacity-50" : ""}
-                    />
-                  </PaginationItem>
-                  {[...Array(productsResponse.pagination.totalPages)].map((_, i) => {
-                     const pageNum = i + 1;
-                     if (productsResponse.pagination!.totalPages <= 5 || 
-                         pageNum === 1 || pageNum === productsResponse.pagination!.totalPages ||
-                         (pageNum >= productsResponse.pagination!.page -1 && pageNum <= productsResponse.pagination!.page + 1)
-                        ) {
-                          return (
-                            <PaginationItem key={i}>
-                              <PaginationLink 
-                                href="#" 
-                                onClick={(e) => { e.preventDefault(); handlePageChange(pageNum)}}
-                                isActive={productsResponse.pagination!.page === pageNum}
-                              >
-                                {pageNum}
-                              </PaginationLink>
-                            </PaginationItem>
-                          );
-                     } else if (pageNum === productsResponse.pagination!.page - 2 || pageNum === productsResponse.pagination!.page + 2) {
-                        return <PaginationEllipsis key={`ellipsis-${i}`} />;
-                     }
-                     return null;
-                  })}
-                  <PaginationItem>
-                    <PaginationNext 
-                       href="#" 
-                       onClick={(e) => { e.preventDefault(); if(productsResponse.pagination!.hasNextPage) handlePageChange(productsResponse.pagination!.page + 1)}}
-                       aria-disabled={!productsResponse.pagination.hasNextPage}
-                       className={!productsResponse.pagination.hasNextPage ? "pointer-events-none opacity-50" : ""}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+            {/* Infinite scroll sentinel and inline loader when fetching more */}
+            <div ref={loadMoreRef} className="h-8" />
+            {loadingProducts && items.length > 0 && (
+              <div className="flex justify-center items-center py-6">
+                <LoadingSpinner size={32} />
+              </div>
             )}
           </>
         ) : (
