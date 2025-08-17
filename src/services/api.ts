@@ -394,16 +394,9 @@ const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
   const baseUrl = API_BASE_URL || "";
 
   if (apiProduct.media && apiProduct.media.length > 0) {
-    images = apiProduct.media.map((m) => {
-      const url = m.url || "";
-      if (url.startsWith("http")) {
-        return url;
-      }
-      if (url.startsWith("/uploads/")) {
-        return `${baseUrl}${url}`;
-      }
-      return url;
-    });
+    images = apiProduct.media
+      .map((m) => `${baseUrl}${m.url || ""}`)
+      .filter((u) => !!u && u !== baseUrl);
   }
 
   if (images.length === 0) {
@@ -425,7 +418,8 @@ const mapApiProductToProduct = (apiProduct: ApiProduct): Product => {
     categoryId: apiProduct.categoryId,
     categoryName: apiProduct.categoryName,
     images: images,
-    imageUrl: apiProduct.imageUrl,
+    // Always render images by prefixing with the API base URL
+    imageUrl: apiProduct.imageUrl ? `${baseUrl}${apiProduct.imageUrl}` : undefined,
     media: apiProduct.media,
     inStock: apiProduct.stock > 0,
     stock: apiProduct.stock,
@@ -638,7 +632,6 @@ export async function fetchProductById(id: string): Promise<Product | null> {
 export async function fetchSizeChartById(id: string): Promise<SizeChart | null> {
   const endpoint = `/api/size-charts/${id}`;
   const response = await fetchFromAPI<RawSizeChartApiResponse>(endpoint);
-  console.log('Log: sizechart: ', response);
   return response.data.sizeChart;
 }
 
