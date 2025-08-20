@@ -70,6 +70,7 @@ function ShopContent() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [hasNextPage, setHasNextPage] = useState<boolean>(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const skipCloseOnFirstChangeRef = useRef(false);
 
   const parseFiltersFromUrl = useCallback((): AppliedFiltersStateFromPanel & { sizes?: Size[], colors?: Color[], brandIds?: string[] } => {
     const sortBy = searchParams.get('sortBy') || undefined;
@@ -335,7 +336,7 @@ function ShopContent() {
       <div className="block md:hidden mb-4">
         <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" className="w-full flex items-center gap-2" onClick={() => setFilterSheetOpen(true)}>
+            <Button variant="outline" className="w-full flex items-center gap-2" onClick={() => { skipCloseOnFirstChangeRef.current = true; setFilterSheetOpen(true); }}>
               <Filter size={18} />
               <span>Filter</span>
             </Button>
@@ -347,7 +348,11 @@ function ShopContent() {
                 loadingFilters={loadingCategories}
                 onFilterChange={(filters) => {
                   handleFilterChange(filters);
-                  setFilterSheetOpen(false);
+                  if (skipCloseOnFirstChangeRef.current) {
+                    skipCloseOnFirstChangeRef.current = false;
+                  } else {
+                    setFilterSheetOpen(false);
+                  }
                 }}
                 initialFilters={currentFiltersForPanel}
               />
