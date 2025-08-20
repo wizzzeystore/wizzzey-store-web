@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Category, AvailableFilters, Size, Color, Brand } from '@/lib/types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -33,9 +33,13 @@ interface FilterPanelProps {
     colors?: Color[];
     brandIds?: string[];
   };
+  emitOnlyOnUserInteraction?: boolean;
 }
 
-const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilters, onFilterChange, initialFilters }) => {
+const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilters, onFilterChange, initialFilters, emitOnlyOnUserInteraction = false }) => {
+  // Gate emissions so that we only emit after the user actually interacts (useful for mobile sheets)
+  const hasUserInteractedRef = useRef(false);
+
   // These are the default bounds for the slider track if not provided by API
   const absoluteMinPrice = 0;
   const absoluteMaxPrice = 5000; // Or a higher sensible default like 10000 or 50000
@@ -104,6 +108,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
 
 
   const handleMinPriceChange = (value: string) => {
+    hasUserInteractedRef.current = true;
     const numValue = parseInt(value) || 0;
     setMinPrice(numValue);
     // Ensure min doesn't exceed max
@@ -113,6 +118,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
   };
 
   const handleMaxPriceChange = (value: string) => {
+    hasUserInteractedRef.current = true;
     const numValue = parseInt(value) || 0;
     setMaxPrice(numValue);
     // Ensure max doesn't go below min
@@ -122,25 +128,32 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
   };
   
   const handleCategoryChange = (categoryId: string) => {
+    hasUserInteractedRef.current = true;
     setSelectedCategories(prev =>
       prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
     );
   };
   
   const handleSizeChange = (size: Size) => {
+    hasUserInteractedRef.current = true;
     setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
   };
   
   const handleColorChange = (color: Color) => {
+    hasUserInteractedRef.current = true;
     setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
   };
   
   const handleBrandChange = (brandId: string) => {
+    hasUserInteractedRef.current = true;
     setSelectedBrands(prev => prev.includes(brandId) ? prev.filter(id => id !== brandId) : [...prev, brandId]);
   };
   
   // Emit changes immediately when any filter is changed
   useEffect(() => {
+    if (emitOnlyOnUserInteraction && !hasUserInteractedRef.current) {
+      return;
+    }
     const trackMinBound = availableFilters?.priceRange?.min ?? absoluteMinPrice;
     const trackMaxBound = availableFilters?.priceRange?.max ?? absoluteMaxPrice;
 
@@ -161,6 +174,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ availableFilters, loadingFilt
   }, [minPrice, maxPrice, selectedCategories, sortBy, sortOrder, selectedSizes, selectedColors, selectedBrands]);
 
   const resetFilters = () => {
+    hasUserInteractedRef.current = true;
     const trackMinBound = availableFilters?.priceRange?.min ?? absoluteMinPrice;
     const trackMaxBound = availableFilters?.priceRange?.max ?? absoluteMaxPrice;
     setMinPrice(trackMinBound);

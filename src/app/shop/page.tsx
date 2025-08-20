@@ -346,13 +346,15 @@ function ShopContent() {
               <FilterPanel
                 availableFilters={constructedAvailableFilters}
                 loadingFilters={loadingCategories}
+                emitOnlyOnUserInteraction
                 onFilterChange={(filters) => {
-                  handleFilterChange(filters);
                   if (skipCloseOnFirstChangeRef.current) {
+                    // Skip the initial emit on mount to avoid router.push closing the sheet.
                     skipCloseOnFirstChangeRef.current = false;
-                  } else {
-                    setFilterSheetOpen(false);
+                    return;
                   }
+                  handleFilterChange(filters);
+                  setFilterSheetOpen(false);
                 }}
                 initialFilters={currentFiltersForPanel}
               />
